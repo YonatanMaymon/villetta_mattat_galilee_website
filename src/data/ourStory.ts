@@ -1,7 +1,4 @@
-export interface SliderImage {
-  src: string
-  alt: string
-}
+import type { SliderImage } from './types'
 
 export interface StoryChapter {
   kicker: string

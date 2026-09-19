@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import type { SliderImage } from '../data/ourStory'
+import type { SliderImage } from '../data/types'
 
 interface ImageSliderProps {
   images: SliderImage[]
