@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Menu, Phone, X } from 'lucide-react'
 import { NAV_LINKS, PHONE_DISPLAY, PHONE_HREF } from '../data/content'
 
@@ -41,7 +42,7 @@ export default function Header({ onBook }: HeaderProps) {
     }
   }, [menuOpen])
 
-  const currentPath = window.location.pathname
+  const currentPath = useLocation().pathname
 
   return (
     <header
@@ -71,7 +72,7 @@ export default function Header({ onBook }: HeaderProps) {
         </button>
       </div>
 
-      <a href="/" aria-label="וילטה מתת גליל">
+      <Link to="/" aria-label="וילטה מתת גליל">
         <img
           src="/assets/villetta-logo.png"
           alt="Villetta מתת גליל"
@@ -79,7 +80,7 @@ export default function Header({ onBook }: HeaderProps) {
             scrolled ? 'h-[52px] sm:h-[60px]' : 'h-[72px] sm:h-[110px]'
           }`}
         />
-      </a>
+      </Link>
 
       {/* Left side in RTL: phone + booking */}
       <div className="flex items-center gap-8 justify-self-end">
@@ -111,8 +112,8 @@ export default function Header({ onBook }: HeaderProps) {
             const current = href === currentPath
             return (
               <li key={href}>
-                <a
-                  href={href}
+                <Link
+                  to={href}
                   onClick={() => setMenuOpen(false)}
                   aria-current={current ? 'page' : undefined}
                   className={`block border-s-2 px-6 py-3 text-lg transition hover:bg-white/10 ${
@@ -120,7 +121,7 @@ export default function Header({ onBook }: HeaderProps) {
                   }`}
                 >
                   {label}
-                </a>
+                </Link>
               </li>
             )
           })}

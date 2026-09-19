@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import SectionHeading from './SectionHeading'
 import { STORY } from '../data/content'
@@ -12,13 +13,13 @@ export default function StorySection() {
         {STORY.body.join(' ')}
       </p>
       <div className="mt-6 text-center">
-        <a
-          href={STORY.href}
+        <Link
+          to={STORY.href}
           className="inline-flex items-center gap-3 border-b border-black pb-1 text-base"
         >
           <ArrowLeft size={16} strokeWidth={1.5} />
           קרא עוד
-        </a>
+        </Link>
       </div>
     </section>
   )

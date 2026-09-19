@@ -1,12 +1,13 @@
+import { Link } from 'react-router-dom'
 import { FEATURE_TILES } from '../data/content'
 
 export default function FeatureStrip() {
   return (
     <section className="grid grid-cols-2 lg:grid-cols-4">
       {FEATURE_TILES.map((tile) => (
-        <a
+        <Link
           key={tile.href}
-          href={tile.href}
+          to={tile.href}
           className="group relative block aspect-square overflow-hidden bg-neutral-200"
         >
           <img
@@ -20,7 +21,7 @@ export default function FeatureStrip() {
             <h3 className="text-2xl font-light">{tile.title}</h3>
             <span className="mt-2 inline-block border-b border-white pb-0.5 text-sm">קרא עוד</span>
           </div>
-        </a>
+        </Link>
       ))}
     </section>
   )
