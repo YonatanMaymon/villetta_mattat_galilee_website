@@ -4,7 +4,7 @@ import { STORY } from '../data/content'
 
 export default function StorySection() {
   return (
-    <section id="content" className="bg-linen-texture px-4 py-24">
+    <section id="content" className="scroll-mt-20 bg-linen-texture px-4 py-24">
       <SectionHeading title={STORY.title}>
         <p className="mx-auto mt-4 max-w-2xl text-2xl font-light leading-snug">{STORY.lead}</p>
       </SectionHeading>

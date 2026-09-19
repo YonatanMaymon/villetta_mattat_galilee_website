@@ -16,10 +16,8 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="relative">
-        <Header onBook={openBooking} />
-        <Hero onWatchVideo={() => setVideoOpen(true)} />
-      </div>
+      <Header onBook={openBooking} />
+      <Hero onWatchVideo={() => setVideoOpen(true)} />
       <main>
         <StorySection />
         <FeatureStrip />

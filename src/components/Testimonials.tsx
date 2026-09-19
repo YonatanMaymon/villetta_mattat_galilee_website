@@ -33,8 +33,7 @@ export default function Testimonials() {
       <SectionHeading title="המלצות" />
 
       <div className="mx-auto mt-8 flex max-w-[1360px] items-start gap-4 sm:gap-8">
-        {/* In RTL the right-hand button goes back, the left-hand one goes forward. */}
-        <button type="button" onClick={prev} aria-label="הקודם" className={arrowClass}>
+        <button type="button" onClick={next} aria-label="הקודם" className={arrowClass}>
           <ChevronRight size={22} strokeWidth={1.5} />
         </button>
 
@@ -43,9 +42,8 @@ export default function Testimonials() {
             <figure
               key={t.author}
               aria-hidden={i !== index}
-              className={`mx-auto max-w-2xl text-center transition-opacity duration-500 ${
-                i === index ? 'opacity-100' : 'pointer-events-none opacity-0'
-              }`}
+              className={`mx-auto max-w-2xl text-center transition-opacity duration-500 ${i === index ? 'opacity-100' : 'pointer-events-none opacity-0'
+                }`}
             >
               <h3 className="text-2xl font-light">{t.title}</h3>
               <blockquote className="mt-3 text-[15px] leading-6 text-neutral-800">{t.body}</blockquote>
@@ -54,7 +52,7 @@ export default function Testimonials() {
           ))}
         </div>
 
-        <button type="button" onClick={next} aria-label="הבא" className={arrowClass}>
+        <button type="button" onClick={prev} aria-label="הבא" className={arrowClass}>
           <ChevronLeft size={22} strokeWidth={1.5} />
         </button>
       </div>
