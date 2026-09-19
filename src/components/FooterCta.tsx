@@ -1,15 +1,9 @@
-import { FaInstagram, FaWaze, FaYoutube } from 'react-icons/fa'
-import { FOOTER, SOCIALS } from '../data/content'
+import SocialLinks from './SocialLinks'
+import { FOOTER } from '../data/content'
 
 interface FooterCtaProps {
   onBook: () => void
 }
-
-const socialLinks = [
-  { href: SOCIALS.instagram, label: 'Instagram', Icon: FaInstagram },
-  { href: SOCIALS.youtube, label: 'Youtube', Icon: FaYoutube },
-  { href: SOCIALS.waze, label: 'Waze', Icon: FaWaze },
-]
 
 export default function FooterCta({ onBook }: FooterCtaProps) {
   return (
@@ -33,16 +27,9 @@ export default function FooterCta({ onBook }: FooterCtaProps) {
           הזמנת מקום
         </button>
 
-        <p className="mt-10 font-medium">{FOOTER.socialLabel}</p>
-        <ul className="mt-3 flex justify-center gap-6">
-          {socialLinks.map(({ href, label, Icon }) => (
-            <li key={label}>
-              <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-                <Icon size={22} />
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-10">
+          <SocialLinks />
+        </div>
       </div>
 
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-between gap-1 px-4 pb-3 text-xs sm:flex-row sm:px-6">

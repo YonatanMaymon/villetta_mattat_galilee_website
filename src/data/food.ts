@@ -1,4 +1,4 @@
-import type { SliderImage } from './types'
+import type { CardItem, SliderImage } from './types'
 
 export const FOOD_HERO = {
   image: '/assets/culinary-food-2.jpg',
@@ -40,20 +40,8 @@ export const BREAKFAST = {
   ],
 }
 
-export type RestaurantBadge = 'nearby' | 'delivers'
-
-export interface Restaurant {
-  name: string
-  description: string
-  image: string
-  badge: RestaurantBadge
-  cta: { label: string; href: string }
-}
-
-export const BADGE_LABELS: Record<RestaurantBadge, string> = {
-  nearby: 'המסעדה בסביבה',
-  delivers: 'מגיע עד לוילטה',
-}
+const BADGE_NEARBY = 'המסעדה בסביבה'
+const BADGE_DELIVERS = 'מגיע עד לוילטה'
 
 export const DINNER = {
   title: 'ארוחות ערב',
@@ -61,49 +49,49 @@ export const DINNER = {
 }
 
 // Listed in reading order (first card is the rightmost in RTL).
-export const RESTAURANTS: Restaurant[] = [
+export const RESTAURANTS: CardItem[] = [
   {
-    name: 'ביסטרו "אלומה"',
+    title: 'ביסטרו "אלומה"',
     description: "קולינאריה מודרנית עם נגיעות מסורתיות הם הרוח החיה שבמטבח הסוער של 'אלומה'.",
     image: '/assets/culinary-stock-photo.jpg',
-    badge: 'nearby',
+    badge: BADGE_NEARBY,
     cta: { label: 'לצפייה בתפריט', href: 'https://alumabistro.co.il/' },
   },
   {
-    name: 'מוניב והדיה',
+    title: 'מוניב והדיה',
     description: 'אוכל דרוזי גלילי טיפיקלי טעים וביתי.',
     image: '/assets/culinary-dolma.jpg',
-    badge: 'delivers',
+    badge: BADGE_DELIVERS,
     cta: { label: 'לצפייה בתפריט', href: '/assets/moniv-hadia-menu.pdf' },
   },
   {
-    name: 'בלדנא בגוש חלב',
+    title: 'בלדנא בגוש חלב',
     description:
       'מסעדה ברוח גלילית בשילוב בר עשיר ומבחר בירה מהטובים בעולם עם אוכל גלילי אוטנתי ומודרני שמייצר חוויה בחשיבה אחרת וטעמים שכוחים.',
     image: '/assets/culinary-blanda.jpg',
-    badge: 'nearby',
+    badge: BADGE_NEARBY,
     // NOTE: the live site links this card to woodgrill.co.il (the גריל עץ site) - likely a slip.
     cta: { label: 'לצפייה בתפריט', href: 'https://www.woodgrill.co.il/' },
   },
   {
-    name: 'גריל עץ',
+    title: 'גריל עץ',
     description: 'מסעדת גורמה המתמחה בבשרים איכותיים וטריים, בנוף הקסום של הגליל העליון',
     image: '/assets/culinary-wix-photo.webp',
-    badge: 'nearby',
+    badge: BADGE_NEARBY,
     cta: { label: 'לצפייה בתפריט', href: 'https://www.woodgrill.co.il/' },
   },
   {
-    name: 'בת יער',
+    title: 'בת יער',
     description: 'מסעדת הבשרים הוותיקה (יער בירייה, מרחק חצי שעה נסיעה)',
     image: '/assets/culinary-facebook-photo-1.jpg',
-    badge: 'nearby',
+    badge: BADGE_NEARBY,
     cta: { label: 'פרטים נוספים', href: 'https://www.batyaar.co.il/' },
   },
   {
-    name: 'אדלינה',
+    title: 'אדלינה',
     description: 'מסעדת שף ים תיכוני (צומת כברי, מרחק חצי שעה)',
     image: '/assets/culinary-facebook-photo-2.jpg',
-    badge: 'nearby',
+    badge: BADGE_NEARBY,
     cta: { label: 'פרטים נוספים', href: 'https://www.adelina.org.il/' },
   },
 ]
