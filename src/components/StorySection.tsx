@@ -1,9 +1,19 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import SectionHeading from './SectionHeading'
-import { STORY } from '../data/content'
+import { useLanguage } from '../i18n/LanguageContext'
 
 export default function StorySection() {
+  const {
+    t,
+    dir,
+    data: {
+      content: { STORY },
+    },
+  } = useLanguage()
+  const rtl = dir === 'rtl'
+  const Arrow = rtl ? ArrowLeft : ArrowRight
+
   return (
     <section id="content" className="scroll-mt-20 bg-linen-texture px-4 py-24">
       <SectionHeading title={STORY.title}>
@@ -15,10 +25,10 @@ export default function StorySection() {
       <div className="mt-6 text-center">
         <Link
           to={STORY.href}
-          className="inline-flex items-center gap-3 border-b border-black pb-1 text-base"
+          className={`inline-flex items-center gap-3 border-b border-black pb-1 text-base ${rtl ? '' : 'flex-row-reverse'}`}
         >
-          <ArrowLeft size={16} strokeWidth={1.5} />
-          קרא עוד
+          <Arrow size={16} strokeWidth={1.5} />
+          {t.readMore}
         </Link>
       </div>
     </section>

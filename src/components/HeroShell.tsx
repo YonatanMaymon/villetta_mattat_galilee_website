@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { ArrowDown } from 'lucide-react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface HeroShellProps {
   background: ReactNode
@@ -18,6 +19,8 @@ export default function HeroShell({
   children,
   contentClassName = 'mt-24',
 }: HeroShellProps) {
+  const { t } = useLanguage()
+
   return (
     <section className="relative flex h-screen min-h-[560px] items-center justify-center overflow-hidden bg-black text-white">
       {background}
@@ -31,7 +34,7 @@ export default function HeroShell({
 
       <a
         href="#content"
-        aria-label="גלילה למטה"
+        aria-label={t.scrollDown}
         className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 animate-bounce"
       >
         <ArrowDown size={32} strokeWidth={1.25} />

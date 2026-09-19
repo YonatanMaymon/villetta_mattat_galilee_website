@@ -1,11 +1,18 @@
 import SocialLinks from './SocialLinks'
-import { FOOTER } from '../data/content'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface FooterCtaProps {
   onBook: () => void
 }
 
 export default function FooterCta({ onBook }: FooterCtaProps) {
+  const {
+    t,
+    data: {
+      content: { FOOTER },
+    },
+  } = useLanguage()
+
   return (
     <footer
       className="relative flex min-h-screen flex-col items-center justify-center bg-cover bg-center px-4 text-center text-white"
@@ -24,7 +31,7 @@ export default function FooterCta({ onBook }: FooterCtaProps) {
           onClick={onBook}
           className="mt-8 cursor-pointer border-2 border-white px-6 py-2 text-lg transition hover:bg-white hover:text-black"
         >
-          הזמנת מקום
+          {t.book}
         </button>
 
         <div className="mt-10">

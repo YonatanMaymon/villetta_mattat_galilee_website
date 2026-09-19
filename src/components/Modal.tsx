@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { X } from 'lucide-react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface ModalProps {
   open: boolean
@@ -10,6 +11,8 @@ interface ModalProps {
 }
 
 export default function Modal({ open, onClose, label, children, className = '' }: ModalProps) {
+  const { t } = useLanguage()
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -39,7 +42,7 @@ export default function Modal({ open, onClose, label, children, className = '' }
         <button
           type="button"
           onClick={onClose}
-          aria-label="סגירה"
+          aria-label={t.close}
           className="absolute end-3 top-3 z-10 cursor-pointer rounded-full p-1 text-current opacity-70 hover:opacity-100"
         >
           <X size={24} />

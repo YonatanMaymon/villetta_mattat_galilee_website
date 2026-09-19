@@ -1,5 +1,5 @@
 import TextSliderSection from './TextSliderSection'
-import { TRIPS } from '../data/area'
+import { useLanguage } from '../i18n/LanguageContext'
 
 function BulletList({ heading, items }: { heading: string; items: string[] }) {
   return (
@@ -15,6 +15,12 @@ function BulletList({ heading, items }: { heading: string; items: string[] }) {
 }
 
 export default function TripsSection() {
+  const {
+    data: {
+      area: { TRIPS },
+    },
+  } = useLanguage()
+
   return (
     <TextSliderSection
       id="content"

@@ -16,7 +16,7 @@ export const GALLERY_HEADING = {
   subtitle: 'בית זוגי הממתין לארח אתכם',
 }
 
-export const GALLERY_ALT = 'וילטה מתת גליל'
+export const GALLERY_ALT: string = 'וילטה מתת גליל'
 
 // In the order of the original gallery.
 export const GALLERY_PHOTOS: GalleryPhoto[] = [

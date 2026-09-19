@@ -12,7 +12,7 @@ export interface PriceRow {
   weekend: number
 }
 
-export const PRICE_COLUMNS = 'אמצ"ש/סופ"ש'
+export const PRICE_COLUMNS: string = 'אמצ"ש/סופ"ש'
 
 export const PRICE_ROWS: PriceRow[] = [
   { label: 'לילה אחד', midweek: 4200, weekend: 4500 },
@@ -21,4 +21,4 @@ export const PRICE_ROWS: PriceRow[] = [
   { label: 'כל לילה נוסף', midweek: 2200, weekend: 2300 },
 ]
 
-export const PRICE_NOTE = '*המחיר לזוג בלבד'
+export const PRICE_NOTE: string = '*המחיר לזוג בלבד'

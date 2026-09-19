@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, Phone, X } from 'lucide-react'
-import { NAV_LINKS, PHONE_DISPLAY, PHONE_HREF } from '../data/content'
+import { PHONE_DISPLAY, PHONE_HREF } from '../data/content'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface HeaderProps {
   onBook: () => void
@@ -11,6 +12,13 @@ const SCROLL_THRESHOLD = 60
 const MENU_ID = 'site-menu'
 
 export default function Header({ onBook }: HeaderProps) {
+  const {
+    t,
+    toggleLang,
+    data: {
+      content: { NAV_LINKS },
+    },
+  } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -47,12 +55,11 @@ export default function Header({ onBook }: HeaderProps) {
   return (
     <header
       ref={headerRef}
-      dir="rtl"
       className={`fixed inset-x-0 top-0 z-30 grid grid-cols-[1fr_auto_1fr] items-center px-4 text-white transition-all duration-300 sm:px-10 ${
         scrolled || menuOpen ? 'bg-black/85 shadow-lg shadow-black/20 backdrop-blur-md' : 'bg-transparent'
       } ${scrolled ? 'py-2' : 'pt-4'}`}
     >
-      {/* Right side in RTL: menu + language (EN is visual only for now) */}
+      {/* Start side: menu + language switch (on phones the switch lives in the menu) */}
       <div className="flex items-center gap-4 justify-self-start">
         <button
           ref={menuButtonRef}
@@ -60,22 +67,28 @@ export default function Header({ onBook }: HeaderProps) {
           onClick={() => setMenuOpen((open) => !open)}
           aria-expanded={menuOpen}
           aria-controls={MENU_ID}
-          aria-label="תפריט"
+          aria-label={t.menu}
           className="flex cursor-pointer items-center gap-3"
         >
           {menuOpen ? <X size={26} strokeWidth={1.5} /> : <Menu size={26} strokeWidth={1.5} />}
-          <span className="hidden text-base sm:inline">תפריט</span>
+          <span className="hidden text-base sm:inline">{t.menu}</span>
         </button>
         <span aria-hidden className="hidden h-4 w-px bg-white/80 sm:block" />
-        <button type="button" className="hidden cursor-pointer text-base sm:inline">
-          EN
+        <button
+          type="button"
+          onClick={toggleLang}
+          lang={t.langCode}
+          aria-label={t.langButtonLabel}
+          className="hidden cursor-pointer text-base sm:inline"
+        >
+          {t.langButton}
         </button>
       </div>
 
-      <Link to="/" aria-label="וילטה מתת גליל">
+      <Link to="/" aria-label={t.homeLink}>
         <img
           src="/assets/villetta-logo.png"
-          alt="Villetta מתת גליל"
+          alt={t.logoAlt}
           className={`w-auto brightness-0 invert transition-all duration-300 ${
             scrolled ? 'h-[52px] sm:h-[60px]' : 'h-[72px] sm:h-[110px]'
           }`}
@@ -87,7 +100,7 @@ export default function Header({ onBook }: HeaderProps) {
         <a href={PHONE_HREF} className="hidden items-center gap-2 text-base lg:flex">
           <Phone size={22} strokeWidth={1.5} />
           <span>
-            להזמנות: <bdi>{PHONE_DISPLAY}</bdi>
+            {t.forBookings} <bdi>{PHONE_DISPLAY}</bdi>
           </span>
         </a>
         <button
@@ -95,14 +108,14 @@ export default function Header({ onBook }: HeaderProps) {
           onClick={onBook}
           className="cursor-pointer border-2 border-white px-4 py-1.5 text-sm font-medium transition hover:bg-white hover:text-black sm:text-base"
         >
-          הזמנת מקום
+          {t.book}
         </button>
       </div>
 
       {/* Dropdown: hangs under the header, aligned to the menu button (right in RTL). */}
       <nav
         id={MENU_ID}
-        aria-label="ניווט ראשי"
+        aria-label={t.mainNav}
         className={`absolute top-full inset-x-0 border-t border-white/10 bg-black/90 shadow-xl shadow-black/30 backdrop-blur-md transition duration-200 sm:inset-x-auto sm:start-10 sm:w-72 ${
           menuOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0'
         }`}
@@ -126,6 +139,19 @@ export default function Header({ onBook }: HeaderProps) {
             )
           })}
         </ul>
+        {/* The header button is hidden on phones, so offer the switch here too. */}
+        <button
+          type="button"
+          onClick={() => {
+            toggleLang()
+            setMenuOpen(false)
+          }}
+          lang={t.langCode}
+          aria-label={t.langButtonLabel}
+          className="block w-full cursor-pointer border-t border-white/10 px-6 py-3 text-start text-lg font-light transition hover:bg-white/10 sm:hidden"
+        >
+          {t.langButton}
+        </button>
       </nav>
     </header>
   )

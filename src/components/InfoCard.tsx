@@ -12,7 +12,7 @@ export default function InfoCard({ item }: InfoCardProps) {
       <div className="relative">
         <img src={image} alt={title} loading="lazy" className="aspect-[9/5] w-full object-cover" />
         {badge && (
-          <span className="absolute left-2 top-2 flex h-[66px] w-[66px] items-center justify-center rounded-full bg-brown/95 p-2 text-center text-[13px] font-normal leading-tight text-white">
+          <span className="absolute end-2 top-2 flex h-[66px] w-[66px] items-center justify-center rounded-full bg-brown/95 p-2 text-center text-[13px] font-normal leading-tight text-white">
             {badge}
           </span>
         )}

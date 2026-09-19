@@ -1,8 +1,14 @@
 import ImageCarousel from './ImageCarousel'
 import SectionHeading from './SectionHeading'
-import { PRIVACY } from '../data/villetta'
+import { useLanguage } from '../i18n/LanguageContext'
 
 export default function PrivacySection() {
+  const {
+    data: {
+      villetta: { PRIVACY },
+    },
+  } = useLanguage()
+
   return (
     <section className="bg-white px-10 py-20 sm:px-14 sm:py-[120px]">
       <SectionHeading title={PRIVACY.title}>

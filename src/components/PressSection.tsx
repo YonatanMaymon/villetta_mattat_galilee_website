@@ -1,7 +1,17 @@
-import { ArrowLeft } from 'lucide-react'
-import { PRESS_ARTICLES } from '../data/press'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 export default function PressSection() {
+  const {
+    t,
+    dir,
+    data: {
+      press: { PRESS_ARTICLES },
+    },
+  } = useLanguage()
+  const rtl = dir === 'rtl'
+  const Arrow = rtl ? ArrowLeft : ArrowRight
+
   return (
     <section id="content" className="scroll-mt-20 bg-linen-texture px-4 py-20 sm:px-[7%] sm:py-[90px]">
       <div className="mx-auto grid max-w-[1710px] gap-14 lg:grid-cols-2 lg:gap-[90px]">
@@ -17,10 +27,12 @@ export default function PressSection() {
               href={a.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 inline-flex items-center gap-3 border-b border-black pb-1.5 text-base"
+              className={`mt-5 inline-flex items-center gap-3 border-b border-black pb-1.5 text-base ${
+                rtl ? '' : 'flex-row-reverse'
+              }`}
             >
-              <ArrowLeft size={16} strokeWidth={1.5} aria-hidden />
-              קרא עוד
+              <Arrow size={16} strokeWidth={1.5} aria-hidden />
+              {t.readMore}
             </a>
           </article>
         ))}

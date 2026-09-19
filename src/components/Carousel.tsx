@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 export interface Breakpoint {
   /** Viewport width (px) from which `perView` applies. First entry should be 0. */
@@ -76,6 +77,7 @@ export default function Carousel<T>({
   mobileArrows = 'overlay',
   onIndexChange,
 }: CarouselProps<T>) {
+  const { t } = useLanguage()
   const perView = usePerView(breakpoints)
   const count = items.length
   const track = [...items, ...items.slice(0, perView)]
@@ -130,11 +132,11 @@ export default function Carousel<T>({
 
   // Physical sides: the button on the left goes "forward" in RTL, "back" in LTR.
   const leftButton = rtl
-    ? { onClick: next, label: 'הבא', Icon: NextIcon }
-    : { onClick: prev, label: 'הקודם', Icon: PrevIcon }
+    ? { onClick: next, label: t.next, Icon: NextIcon }
+    : { onClick: prev, label: t.previous, Icon: PrevIcon }
   const rightButton = rtl
-    ? { onClick: prev, label: 'הקודם', Icon: PrevIcon }
-    : { onClick: next, label: 'הבא', Icon: NextIcon }
+    ? { onClick: prev, label: t.previous, Icon: PrevIcon }
+    : { onClick: next, label: t.next, Icon: NextIcon }
 
   return (
     <div

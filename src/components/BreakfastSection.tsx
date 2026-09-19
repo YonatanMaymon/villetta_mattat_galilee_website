@@ -1,8 +1,14 @@
 import { Fragment } from 'react'
 import TextSliderSection from './TextSliderSection'
-import { BREAKFAST } from '../data/food'
+import { useLanguage } from '../i18n/LanguageContext'
 
 export default function BreakfastSection() {
+  const {
+    data: {
+      food: { BREAKFAST },
+    },
+  } = useLanguage()
+
   return (
     <TextSliderSection
       id="content"

@@ -2,7 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { Mail, MapPin, Smartphone } from 'lucide-react'
 import SectionHeading from './SectionHeading'
 import SocialLinks from './SocialLinks'
-import { CONTACT_DETAILS, CONTACT_FORM } from '../data/contact'
+import { useLanguage } from '../i18n/LanguageContext'
 
 function Detail({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
@@ -20,6 +20,13 @@ const fieldClass =
   'w-full border-0 border-b border-neutral-500 bg-transparent px-1 pb-3 pt-5 text-base outline-none placeholder:text-neutral-900 focus:border-black'
 
 export default function ContactSection() {
+  const {
+    t,
+    dir,
+    data: {
+      contact: { CONTACT_DETAILS, CONTACT_FORM },
+    },
+  } = useLanguage()
   const [sent, setSent] = useState(false)
   const { phone, email, address } = CONTACT_DETAILS
 
@@ -54,31 +61,31 @@ export default function ContactSection() {
         </SectionHeading>
 
         {sent ? (
-          <p className="py-16 text-center text-xl">תודה! נחזור אליכם בהקדם.</p>
+          <p className="py-16 text-center text-xl">{t.thanks}</p>
         ) : (
           <form onSubmit={handleSubmit} className="mx-auto mt-12 flex max-w-[642px] flex-col gap-1">
-            <input className={fieldClass} name="name" type="text" placeholder="שם מלא*" required aria-label="שם מלא" />
-            <input className={fieldClass} name="email" type="email" placeholder="אימייל" aria-label="אימייל" />
+            <input className={fieldClass} name="name" type="text" placeholder={`${t.fullName}*`} required aria-label={t.fullName} />
+            <input className={fieldClass} name="email" type="email" placeholder={t.email} aria-label={t.email} />
             <input
               className={fieldClass}
               name="tel"
               type="tel"
-              dir="rtl"
-              placeholder="טלפון*"
+              dir={dir}
+              placeholder={`${t.phone}*`}
               required
-              aria-label="טלפון"
+              aria-label={t.phone}
             />
             <textarea
               className={`${fieldClass} min-h-[110px] resize-y`}
               name="message"
-              placeholder="הודעה"
-              aria-label="הודעה"
+              placeholder={t.message}
+              aria-label={t.message}
             />
             <button
               type="submit"
               className="mx-auto mt-3 cursor-pointer border border-black bg-white px-8 py-2.5 text-lg font-semibold transition hover:bg-black hover:text-white"
             >
-              שליחה
+              {t.send}
             </button>
           </form>
         )}

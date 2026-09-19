@@ -1,5 +1,6 @@
 import { FaInstagram, FaWaze, FaYoutube } from 'react-icons/fa'
-import { FOOTER, SOCIALS } from '../data/content'
+import { SOCIALS } from '../data/content'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const socialLinks = [
   { href: SOCIALS.instagram, label: 'Instagram', Icon: FaInstagram },
@@ -9,6 +10,12 @@ const socialLinks = [
 
 /** "Find us on" label plus the three social icons; inherits the text colour. */
 export default function SocialLinks() {
+  const {
+    data: {
+      content: { FOOTER },
+    },
+  } = useLanguage()
+
   return (
     <div className="text-center">
       <p className="font-medium">{FOOTER.socialLabel}</p>

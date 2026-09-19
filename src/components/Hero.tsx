@@ -1,12 +1,19 @@
 import { CirclePlay } from 'lucide-react'
 import HeroShell from './HeroShell'
-import { HERO } from '../data/content'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface HeroProps {
   onWatchVideo: () => void
 }
 
 export default function Hero({ onWatchVideo }: HeroProps) {
+  const {
+    t,
+    data: {
+      content: { HERO },
+    },
+  } = useLanguage()
+
   return (
     <HeroShell
       title={HERO.title}
@@ -29,7 +36,7 @@ export default function Hero({ onWatchVideo }: HeroProps) {
         className="mt-6 inline-flex cursor-pointer items-center gap-2 text-base"
       >
         <CirclePlay size={26} strokeWidth={1.5} />
-        צפייה בסרטון המלא
+        {t.watchVideo}
       </button>
     </HeroShell>
   )

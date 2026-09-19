@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Lightbox from './Lightbox'
-import { GALLERY_ALT, type GalleryPhoto } from '../data/gallery'
+import type { GalleryPhoto } from '../data/gallery'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface MasonryGalleryProps {
   photos: GalleryPhoto[]
@@ -22,9 +23,15 @@ function useColumnCount() {
 
 /**
  * Masonry: photos keep their reading order, each going to the currently shortest column
- * (the first column is on the right in RTL). Click opens a lightbox.
+ * (the first column is at the start side). Click opens a lightbox.
  */
 export default function MasonryGallery({ photos }: MasonryGalleryProps) {
+  const {
+    t,
+    data: {
+      gallery: { GALLERY_ALT },
+    },
+  } = useLanguage()
   const columnCount = useColumnCount()
   const [open, setOpen] = useState<number | null>(null)
 
@@ -39,7 +46,10 @@ export default function MasonryGallery({ photos }: MasonryGalleryProps) {
     return cols
   }, [photos, columnCount])
 
-  const lightboxImages = useMemo(() => photos.map((p) => ({ src: p.src, alt: GALLERY_ALT })), [photos])
+  const lightboxImages = useMemo(
+    () => photos.map((p) => ({ src: p.src, alt: GALLERY_ALT })),
+    [photos, GALLERY_ALT],
+  )
 
   return (
     <>
@@ -51,7 +61,7 @@ export default function MasonryGallery({ photos }: MasonryGalleryProps) {
                 key={photo.src}
                 type="button"
                 onClick={() => setOpen(index)}
-                aria-label={`הגדלת תמונה ${index + 1}`}
+                aria-label={t.enlargeImageN(index + 1)}
                 className="block cursor-zoom-in overflow-hidden"
               >
                 <img

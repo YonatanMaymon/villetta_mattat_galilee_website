@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface LightboxProps {
   images: { src: string; alt: string }[]
@@ -12,15 +13,17 @@ const arrowClass =
   'absolute top-1/2 -translate-y-1/2 cursor-pointer p-2 text-white/80 transition hover:text-white'
 
 export default function Lightbox({ images, index, onChange }: LightboxProps) {
+  const { t, dir } = useLanguage()
   const count = images.length
+  const rtl = dir === 'rtl'
 
   useEffect(() => {
     if (index === null) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onChange(null)
-      // The page is RTL: ArrowLeft goes forward, like the on-screen left arrow.
-      else if (e.key === 'ArrowLeft') onChange((index + 1) % count)
-      else if (e.key === 'ArrowRight') onChange((index - 1 + count) % count)
+      // Keys follow the on-screen arrows: in RTL the left arrow goes forward, in LTR the right one.
+      else if (e.key === (rtl ? 'ArrowLeft' : 'ArrowRight')) onChange((index + 1) % count)
+      else if (e.key === (rtl ? 'ArrowRight' : 'ArrowLeft')) onChange((index - 1 + count) % count)
     }
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -29,7 +32,7 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = prevOverflow
     }
-  }, [index, count, onChange])
+  }, [index, count, rtl, onChange])
 
   if (index === null) return null
   const image = images[index]
@@ -38,7 +41,7 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="תמונה מוגדלת"
+      aria-label={t.enlargedImage}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-14"
       onClick={() => onChange(null)}
     >
@@ -50,7 +53,7 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
       />
       <button
         type="button"
-        aria-label="סגירה"
+        aria-label={t.close}
         onClick={() => onChange(null)}
         className="absolute end-3 top-3 cursor-pointer p-2 text-white/80 transition hover:text-white"
       >
@@ -58,10 +61,10 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
       </button>
       <button
         type="button"
-        aria-label="הבא"
+        aria-label={rtl ? t.next : t.previous}
         onClick={(e) => {
           e.stopPropagation()
-          onChange((index + 1) % count)
+          onChange(rtl ? (index + 1) % count : (index - 1 + count) % count)
         }}
         className={`${arrowClass} left-2`}
       >
@@ -69,10 +72,10 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
       </button>
       <button
         type="button"
-        aria-label="הקודם"
+        aria-label={rtl ? t.previous : t.next}
         onClick={(e) => {
           e.stopPropagation()
-          onChange((index - 1 + count) % count)
+          onChange(rtl ? (index - 1 + count) % count : (index + 1) % count)
         }}
         className={`${arrowClass} right-2`}
       >

@@ -3,6 +3,7 @@ import Carousel, { type Breakpoint } from './Carousel'
 import InfoCard from './InfoCard'
 import SectionHeading from './SectionHeading'
 import type { CardItem } from '../data/types'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface CardCarouselSectionProps {
   title: string
@@ -19,8 +20,9 @@ const BREAKPOINTS: Breakpoint[] = [
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-/** White section with a heading and an RTL carousel of cards plus a "01 / 06" counter. */
+/** White section with a heading and a direction-aware carousel of cards plus a "01 / 06" counter. */
 export default function CardCarouselSection({ title, subtitle, items }: CardCarouselSectionProps) {
+  const { dir } = useLanguage()
   const [current, setCurrent] = useState(0)
 
   return (
@@ -34,7 +36,7 @@ export default function CardCarouselSection({ title, subtitle, items }: CardCaro
           items={items}
           breakpoints={BREAKPOINTS}
           gap={25}
-          dir="rtl"
+          dir={dir}
           arrowStyle="arrow"
           arrowOutset={44}
           mobileArrows="outside"
@@ -42,7 +44,7 @@ export default function CardCarouselSection({ title, subtitle, items }: CardCaro
           onIndexChange={setCurrent}
           renderItem={(item) => <InfoCard item={item} />}
         />
-        {/* Read in RTL, so it shows as "06 / 01" like the original. */}
+        {/* Read in RTL, Hebrew shows as "06 / 01" like the original. */}
         <p className="mt-8 text-center text-base" aria-live="polite">
           {pad(current + 1)} / {pad(items.length)}
         </p>

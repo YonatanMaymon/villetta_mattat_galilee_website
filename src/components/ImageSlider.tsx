@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { SliderImage } from '../data/types'
+import { useLanguage } from '../i18n/LanguageContext'
 
 interface ImageSliderProps {
   images: SliderImage[]
@@ -20,6 +21,7 @@ export default function ImageSlider({
   label,
   aspectClassName = 'aspect-[10/7]',
 }: ImageSliderProps) {
+  const { t } = useLanguage()
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
   const count = images.length
@@ -54,10 +56,10 @@ export default function ImageSlider({
           }`}
         />
       ))}
-      <button type="button" onClick={() => go(-1)} aria-label="הקודם" className={`${arrowClass} left-2`}>
+      <button type="button" onClick={() => go(-1)} aria-label={t.previous} className={`${arrowClass} left-2`}>
         <ChevronLeft size={32} strokeWidth={1.25} />
       </button>
-      <button type="button" onClick={() => go(1)} aria-label="הבא" className={`${arrowClass} right-2`}>
+      <button type="button" onClick={() => go(1)} aria-label={t.next} className={`${arrowClass} right-2`}>
         <ChevronRight size={32} strokeWidth={1.25} />
       </button>
     </div>

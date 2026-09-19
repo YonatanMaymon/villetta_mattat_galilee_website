@@ -3,7 +3,7 @@ import type { StoryChapter as StoryChapterData } from '../data/ourStory'
 
 interface StoryChapterProps {
   chapter: StoryChapterData
-  /** Put the slider on the right (first in RTL) and the copy on the left. */
+  /** Put the slider first (start side) and the copy after it. */
   imageFirst?: boolean
   className?: string
   panelClassName?: string
@@ -17,7 +17,7 @@ export default function StoryChapter({
 }: StoryChapterProps) {
   // Copy sits in a 40% column, inset 10% on the side facing the slider.
   const text = (
-    <div className={`text-neutral-800 ${imageFirst ? 'lg:pr-[10%]' : 'lg:pl-[10%]'}`}>
+    <div className={`text-neutral-800 ${imageFirst ? 'lg:ps-[10%]' : 'lg:pe-[10%]'}`}>
       <p className="text-[22px] font-normal leading-tight text-neutral-700">{chapter.kicker}</p>
       <h2 className="text-[34px] font-normal leading-tight text-neutral-900">{chapter.title}</h2>
       <div className="mt-5 space-y-4 text-[15px] leading-6">
