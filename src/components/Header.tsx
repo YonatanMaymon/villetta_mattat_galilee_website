@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, Phone, X } from 'lucide-react'
 import { PHONE_DISPLAY, PHONE_HREF } from '../data/content'
 import { useLanguage } from '../i18n/LanguageContext'
+import { stripLang } from '../i18n/paths'
 
 interface HeaderProps {
   onBook: () => void
@@ -14,7 +15,8 @@ const MENU_ID = 'site-menu'
 export default function Header({ onBook }: HeaderProps) {
   const {
     t,
-    toggleLang,
+    localize,
+    otherLangPath,
     data: {
       content: { NAV_LINKS },
     },
@@ -50,7 +52,7 @@ export default function Header({ onBook }: HeaderProps) {
     }
   }, [menuOpen])
 
-  const currentPath = useLocation().pathname
+  const currentPath = stripLang(useLocation().pathname)
 
   return (
     <header
@@ -74,18 +76,18 @@ export default function Header({ onBook }: HeaderProps) {
           <span className="hidden text-base sm:inline">{t.menu}</span>
         </button>
         <span aria-hidden className="hidden h-4 w-px bg-white/80 sm:block" />
-        <button
-          type="button"
-          onClick={toggleLang}
+        <Link
+          to={otherLangPath}
           lang={t.langCode}
+          hrefLang={t.langCode}
           aria-label={t.langButtonLabel}
           className="hidden cursor-pointer text-base sm:inline"
         >
           {t.langButton}
-        </button>
+        </Link>
       </div>
 
-      <Link to="/" aria-label={t.homeLink}>
+      <Link to={localize('/')} aria-label={t.homeLink}>
         <img
           src="/assets/villetta-logo.png"
           alt={t.logoAlt}
@@ -126,7 +128,7 @@ export default function Header({ onBook }: HeaderProps) {
             return (
               <li key={href}>
                 <Link
-                  to={href}
+                  to={localize(href)}
                   onClick={() => setMenuOpen(false)}
                   aria-current={current ? 'page' : undefined}
                   className={`block border-s-2 px-6 py-3 text-lg transition hover:bg-white/10 ${
@@ -140,18 +142,16 @@ export default function Header({ onBook }: HeaderProps) {
           })}
         </ul>
         {/* The header button is hidden on phones, so offer the switch here too. */}
-        <button
-          type="button"
-          onClick={() => {
-            toggleLang()
-            setMenuOpen(false)
-          }}
+        <Link
+          to={otherLangPath}
+          onClick={() => setMenuOpen(false)}
           lang={t.langCode}
+          hrefLang={t.langCode}
           aria-label={t.langButtonLabel}
-          className="block w-full cursor-pointer border-t border-white/10 px-6 py-3 text-start text-lg font-light transition hover:bg-white/10 sm:hidden"
+          className="block w-full border-t border-white/10 px-6 py-3 text-start text-lg font-light transition hover:bg-white/10 sm:hidden"
         >
           {t.langButton}
-        </button>
+        </Link>
       </nav>
     </header>
   )

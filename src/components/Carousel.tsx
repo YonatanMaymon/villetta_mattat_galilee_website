@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLanguage } from '../i18n/LanguageContext'
 
@@ -36,8 +36,10 @@ function usePerView(breakpoints: Breakpoint[]) {
     return perView
   }, [breakpoints])
 
-  const [perView, setPerView] = useState(read)
-  useEffect(() => {
+  // No window on the server: start from the smallest layout and read the real width before paint.
+  const [perView, setPerView] = useState(breakpoints[0].perView)
+  useLayoutEffect(() => {
+    setPerView(read())
     const onResize = () => setPerView(read())
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)

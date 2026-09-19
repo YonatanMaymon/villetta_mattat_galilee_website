@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useState } from 'react'
 import Lightbox from './Lightbox'
 import type { GalleryPhoto } from '../data/gallery'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -12,8 +12,10 @@ function readColumnCount() {
 }
 
 function useColumnCount() {
-  const [count, setCount] = useState(readColumnCount)
-  useEffect(() => {
+  // No window on the server: start with one column and read the real width before paint.
+  const [count, setCount] = useState(1)
+  useLayoutEffect(() => {
+    setCount(readColumnCount())
     const onResize = () => setCount(readColumnCount())
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)

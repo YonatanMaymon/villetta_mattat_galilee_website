@@ -5,6 +5,7 @@ import FooterCta from '../components/FooterCta'
 import BookingModal from '../components/BookingModal'
 import VideoModal from '../components/VideoModal'
 import AccessibilityButton from '../components/AccessibilityButton'
+import Seo from '../seo/Seo'
 
 export interface SiteContext {
   openVideo: () => void
@@ -31,6 +32,7 @@ export default function SiteLayout() {
   return (
     <>
       <ScrollToTop />
+      <Seo />
       <Header onBook={openBooking} />
       <Outlet context={context} />
       <FooterCta onBook={openBooking} />

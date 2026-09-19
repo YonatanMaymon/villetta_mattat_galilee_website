@@ -1,64 +1,50 @@
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
 import { STRINGS, type Strings } from './strings'
 import { DATA, type SiteData } from './data'
+import { langFromPath, localizePath, otherLang, stripLang, type Lang } from './paths'
 
-export type Lang = 'he' | 'en'
+export type { Lang } from './paths'
 type Dir = 'rtl' | 'ltr'
 
-const STORAGE_KEY = 'villetta-lang'
 const DIRECTIONS: Record<Lang, Dir> = { he: 'rtl', en: 'ltr' }
-const TITLES: Record<Lang, string> = {
-  he: 'VILLETTA - מתת גליל',
-  en: 'VILLETTA - Mattat Galilee',
-}
 
 interface LanguageValue {
   lang: Lang
   dir: Dir
   t: Strings
   data: SiteData
-  toggleLang: () => void
+  /** Adds the `/en` prefix when the site is English: `localize('/gallery')`. */
+  localize: (path: string) => string
+  /** The current page (with query and hash) in the other language. */
+  otherLangPath: string
 }
 
 const LanguageContext = createContext<LanguageValue | null>(null)
 
-function readStoredLang(): Lang {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'he' || stored === 'en') return stored
-  } catch {
-    // Storage can be blocked (private mode); fall back to the default.
-  }
-  return 'he'
-}
-
+/** The language comes from the URL: `/en/...` is English, everything else Hebrew. */
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(readStoredLang)
+  const { pathname, search, hash } = useLocation()
+  const lang = langFromPath(pathname)
   const dir = DIRECTIONS[lang]
 
-  // Layout effect so the direction flips before paint (no RTL flash for English visitors).
-  useLayoutEffect(() => {
+  // The prerendered HTML already carries lang/dir; this keeps them right after client-side navigation.
+  useEffect(() => {
     const root = document.documentElement
     root.lang = lang
     root.dir = dir
-    document.title = TITLES[lang]
   }, [lang, dir])
 
-  const toggleLang = useCallback(() => {
-    setLang((current) => {
-      const next: Lang = current === 'he' ? 'en' : 'he'
-      try {
-        localStorage.setItem(STORAGE_KEY, next)
-      } catch {
-        // Not persisted; the choice still applies for this visit.
-      }
-      return next
-    })
-  }, [])
-
   const value = useMemo<LanguageValue>(
-    () => ({ lang, dir, t: STRINGS[lang], data: DATA[lang], toggleLang }),
-    [lang, dir, toggleLang],
+    () => ({
+      lang,
+      dir,
+      t: STRINGS[lang],
+      data: DATA[lang],
+      localize: (path) => localizePath(path, lang),
+      otherLangPath: localizePath(stripLang(pathname), otherLang(lang)) + search + hash,
+    }),
+    [lang, dir, pathname, search, hash],
   )
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>

@@ -4,6 +4,7 @@ import { useLanguage } from '../i18n/LanguageContext'
 export default function FeatureStrip() {
   const {
     t,
+    localize,
     data: {
       content: { FEATURE_TILES },
     },
@@ -14,7 +15,7 @@ export default function FeatureStrip() {
       {FEATURE_TILES.map((tile) => (
         <Link
           key={tile.href}
-          to={tile.href}
+          to={localize(tile.href)}
           className="group relative block aspect-square overflow-hidden bg-neutral-200"
         >
           <img

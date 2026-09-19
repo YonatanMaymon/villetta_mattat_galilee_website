@@ -7,6 +7,7 @@ export default function StorySection() {
   const {
     t,
     dir,
+    localize,
     data: {
       content: { STORY },
     },
@@ -24,7 +25,7 @@ export default function StorySection() {
       </p>
       <div className="mt-6 text-center">
         <Link
-          to={STORY.href}
+          to={localize(STORY.href)}
           className={`inline-flex items-center gap-3 border-b border-black pb-1 text-base ${rtl ? '' : 'flex-row-reverse'}`}
         >
           <Arrow size={16} strokeWidth={1.5} />
