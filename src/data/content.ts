@@ -2,6 +2,23 @@ export const PHONE_DISPLAY = '052-4560554'
 export const PHONE_HREF = 'tel:+972524560554'
 export const YOUTUBE_VIDEO_ID = '3tZoOpgGw4Q'
 
+export interface NavLink {
+  label: string
+  href: string
+}
+
+export const NAV_LINKS: NavLink[] = [
+  { label: 'ראשי', href: '/' },
+  { label: 'הסיפור שלנו', href: '/our-story' },
+  { label: 'על הוילטה', href: '/villetta' },
+  { label: 'האוכל', href: '/culinary' },
+  { label: 'מה באזור', href: '/the-area' },
+  { label: 'גלריה', href: '/gallery' },
+  { label: 'כתבו עלינו', href: '/written-about-us' },
+  { label: 'מחירון', href: '/price' },
+  { label: 'צור קשר', href: '/contact' },
+]
+
 export const HERO = {
   title: 'מקום כה קסום ומיוחד!',
   subtitle: 'פיסת גן עדן שמימית בה הכול קיים, לא חסר דבר, בדיוק והרמוניה מופתיים',
