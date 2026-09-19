@@ -1,12 +1,32 @@
 @import 'tailwindcss';
-@import '@fontsource/heebo/300.css';
-@import '@fontsource/heebo/400.css';
-@import '@fontsource/heebo/500.css';
-@import '@fontsource/mrs-saint-delafield/400.css';
 
+/* Heebo and Poppins come from Google Fonts (see <link> in index.html). */
+
+/* Custom fonts copied from the original WordPress site. */
+@font-face {
+  font-family: 'Abiding Love Script';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('/fonts/Abiding-Love-Script.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Abiding Love Script Alternates';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('/fonts/Abiding-Love-Script-Alternates.woff') format('woff');
+}
+
+/* Tailwind v4 has no tailwind.config: font utilities are declared here.
+   Gives font-heebo, font-poppins, font-script and font-script-alt. */
 @theme {
   --font-sans: 'Heebo', system-ui, sans-serif;
-  --font-script: 'Mrs Saint Delafield', cursive;
+  --font-heebo: 'Heebo', system-ui, sans-serif;
+  --font-poppins: 'Poppins', 'Heebo', system-ui, sans-serif;
+  --font-script: 'Abiding Love Script', cursive;
+  --font-script-alt: 'Abiding Love Script Alternates', 'Abiding Love Script', cursive;
   --color-linen: #efece8;
   --color-paper: #fcfbf9;
   --color-ink: #111;

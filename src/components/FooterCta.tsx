@@ -20,10 +20,10 @@ export default function FooterCta({ onBook }: FooterCtaProps) {
       <div className="absolute inset-0 bg-black/45" />
 
       <div className="relative z-10">
-        <p dir="ltr" className="font-script text-[80px] leading-none sm:text-[150px]">
+        <p dir="ltr" className="font-script text-[76px] leading-[0.8] sm:text-[155px]">
           {FOOTER.script}
         </p>
-        <h2 className="-mt-2 text-4xl font-normal sm:mt-0 sm:text-5xl">{FOOTER.title}</h2>
+        <h2 className="-mt-2 text-4xl font-normal sm:mt-14 sm:text-5xl">{FOOTER.title}</h2>
         <p className="mt-6 text-xl">{FOOTER.subtitle}</p>
         <button
           type="button"
