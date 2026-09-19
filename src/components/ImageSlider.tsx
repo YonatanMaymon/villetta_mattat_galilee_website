@@ -6,13 +6,20 @@ interface ImageSliderProps {
   images: SliderImage[]
   intervalMs: number
   label: string
+  /** Tailwind aspect-ratio class for the frame. */
+  aspectClassName?: string
 }
 
 const arrowClass =
   'absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer p-2 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] transition hover:scale-110'
 
 /** Cross-fading image slider with arrows, autoplay and pause on hover. */
-export default function ImageSlider({ images, intervalMs, label }: ImageSliderProps) {
+export default function ImageSlider({
+  images,
+  intervalMs,
+  label,
+  aspectClassName = 'aspect-[10/7]',
+}: ImageSliderProps) {
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
   const count = images.length
@@ -31,7 +38,7 @@ export default function ImageSlider({ images, intervalMs, label }: ImageSliderPr
       role="region"
       aria-roledescription="carousel"
       aria-label={label}
-      className="relative aspect-[10/7] w-full overflow-hidden bg-neutral-200"
+      className={`relative w-full overflow-hidden bg-neutral-200 ${aspectClassName}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
