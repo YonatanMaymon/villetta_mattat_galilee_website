@@ -6,6 +6,7 @@
     "dev": "concurrently -n site,api -c cyan,magenta \"vite\" \"npm:dev:api\"",
     "dev:api": "tsx watch --env-file-if-exists=.env.local server/index.ts",
     "start": "tsx server/index.ts",
+    "check:live": "tsx scripts/check-live.ts",
     "build": "tsc && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "test": "vitest run",

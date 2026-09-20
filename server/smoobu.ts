@@ -56,12 +56,23 @@ export interface SignInput {
   nonce: string
 }
 
-/** The exact text Smoobu expects to be signed. */
-export async function canonicalString(input: Omit<SignInput, 'apiSecret'>): Promise<string> {
-  const query = [...(input.query ?? [])]
+/**
+ * The query string as Smoobu wants it, both in the signature and on the wire: percent-encoded (so
+ * `apartments[]` becomes `apartments%5B%5D`) and sorted. Smoobu answers 401 if the brackets go out raw,
+ * even though the signature was computed over the same text. The signed text and the URL must be built
+ * by this one function so they can never disagree.
+ */
+export function encodeQuery(query: [string, string][] = []): string {
+  return query
+    .map(([key, value]) => [encodeURIComponent(key), encodeURIComponent(value)] as const)
     .sort(([a, av], [b, bv]) => (a === b ? av.localeCompare(bv) : a.localeCompare(b)))
     .map(([key, value]) => `${key}=${value}`)
     .join('&')
+}
+
+/** The exact text Smoobu expects to be signed. */
+export async function canonicalString(input: Omit<SignInput, 'apiSecret'>): Promise<string> {
+  const query = encodeQuery(input.query)
   return [
     input.method.toUpperCase(),
     input.path,
@@ -112,7 +123,7 @@ export function createSmoobuClient(config: SmoobuConfig, deps: SmoobuDeps = {}):
       timestamp: now().toISOString(),
       nonce: uuid(),
     })
-    const search = query?.length ? `?${query.map(([k, v]) => `${k}=${v}`).join('&')}` : ''
+    const search = query?.length ? `?${encodeQuery(query)}` : ''
 
     let response: Response
     try {

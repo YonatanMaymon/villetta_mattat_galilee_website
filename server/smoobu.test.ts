@@ -1,7 +1,7 @@
 import { createHmac, createHash } from 'node:crypto'
 import { describe, expect, it, vi } from 'vitest'
 import { PmsRejectedError, PmsUnavailableError } from './pms'
-import { canonicalString, createSmoobuClient, PENDING_NOTICE, sha256Hex, signRequest } from './smoobu'
+import { canonicalString, createSmoobuClient, encodeQuery, PENDING_NOTICE, sha256Hex, signRequest } from './smoobu'
 
 const config = { apiKey: 'key-123', apiSecret: 'secret-abc', apartmentId: 42, customerId: 7 }
 
@@ -44,6 +44,35 @@ describe('request signing', () => {
       nonce: 'n',
     })
     expect(canonical.split('\n')[2]).toBe('from=2026-04-01&to=2026-04-10')
+  })
+
+  it('percent-encodes brackets in the signed query, as Smoobu requires (raw brackets get a 401)', async () => {
+    const canonical = await canonicalString({
+      method: 'GET',
+      path: '/api/rates',
+      query: [
+        ['start_date', '2026-10-01'],
+        ['apartments[]', '42'],
+        ['end_date', '2026-10-31'],
+      ],
+      apiKey: 'k',
+      timestamp: 't',
+      nonce: 'n',
+    })
+    expect(canonical.split('\n')[2]).toBe('apartments%5B%5D=42&end_date=2026-10-31&start_date=2026-10-01')
+  })
+
+  it('sends on the wire exactly the query text it signed', async () => {
+    const seen: string[] = []
+    const client = createSmoobuClient(config, {
+      fetch: (async (url: string) => {
+        seen.push(String(url))
+        return new Response(JSON.stringify({ data: { '42': {} } }), { status: 200 })
+      }) as unknown as typeof fetch,
+    })
+    await client.getBusyNights({ from: '2026-10-01', until: '2026-10-05' })
+    expect(seen[0]).toContain('?' + encodeQuery([['apartments[]', '42'], ['end_date', '2026-10-05'], ['start_date', '2026-10-01']]))
+    expect(seen[0]).not.toContain('[')
   })
 
   it('signs with HMAC-SHA256 and base64, matching an independent implementation', async () => {
