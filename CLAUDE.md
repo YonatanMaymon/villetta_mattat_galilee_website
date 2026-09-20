@@ -47,8 +47,8 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 
 ## Smoobu gotchas
 
-- Auth is HMAC (`X-API-Key`, `X-Timestamp`, `X-Nonce`, `X-Signature`). The legacy `Api-Key` header was
-  switched off on 2026-09-25.
+- Auth is HMAC (`X-API-Key`, `X-Timestamp`, `X-Nonce`, `X-Signature`). Smoobu switches the legacy `Api-Key`
+  header off on 2026-09-25, so never use it.
 - **Query strings must be percent-encoded in both the signature and the URL** (`apartments%5B%5D=`, not
   `apartments[]=`), or Smoobu answers 401 "Authentication required". Always use `encodeQuery()` in
   `server/smoobu.ts`; never build a query string by hand.
@@ -74,8 +74,8 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - Values live in `.env.local` (Vite/Node), `.dev.vars` (wrangler dev) and Cloudflare secrets
   (`wrangler secret put`). All are gitignored except `.env.example`.
 - **Never print, log or commit a value.** When debugging, print only lengths, booleans or status codes.
-- The local `git stash` and the unpushed commits behind it hold OLD real credentials (an iCal secret and a
-  Resend key). Do not run `git stash show -p` or `git log -p --all` and echo the output.
+- Git history is clean: an old stash and unpushed commits that held real credentials were purged from the
+  owner's clone on 2026-09-20. If a credential ever does reach a commit, treat it as leaked and rotate it.
 - `VITE_TURNSTILE_SITE_KEY` is public and baked in at build time; `TURNSTILE_SECRET` is a Worker secret.
 
 ## Status and open items
