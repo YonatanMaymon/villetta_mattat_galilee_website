@@ -3,6 +3,7 @@ import { Mail, MapPin, Smartphone } from 'lucide-react'
 import SectionHeading from './SectionHeading'
 import SocialLinks from './SocialLinks'
 import { useLanguage } from '../i18n/LanguageContext'
+import { ApiRequestError, submitContact } from '../lib/api'
 
 function Detail({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
@@ -26,14 +27,34 @@ export default function ContactSection() {
     data: {
       contact: { CONTACT_DETAILS, CONTACT_FORM },
     },
+    lang,
   } = useLanguage()
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<'rateLimited' | 'sendFailed' | null>(null)
   const { phone, email, address } = CONTACT_DETAILS
 
-  // Stub: the live site posts to WordPress/Elementor; no backend exists yet.
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setSent(true)
+    const form = new FormData(e.currentTarget)
+    const field = (name: string) => String(form.get(name) ?? '')
+    setSubmitting(true)
+    setError(null)
+    try {
+      await submitContact({
+        name: field('name'),
+        phone: field('tel'),
+        email: field('email'),
+        message: field('message'),
+        website: field('website'),
+        lang,
+      })
+      setSent(true)
+    } catch (err) {
+      setError(err instanceof ApiRequestError && err.code === 'rate_limited' ? 'rateLimited' : 'sendFailed')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -78,14 +99,30 @@ export default function ContactSection() {
             <textarea
               className={`${fieldClass} min-h-[110px] resize-y`}
               name="message"
-              placeholder={t.message}
+              placeholder={`${t.message}*`}
+              required
               aria-label={t.message}
             />
+            {/* Honeypot: invisible to people, tempting to bots. */}
+            <input
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden
+              className="absolute -left-[9999px] h-0 w-0 opacity-0"
+            />
+            {error && (
+              <p role="alert" className="mt-2 text-center text-red-700">
+                {t[error]}
+              </p>
+            )}
             <button
               type="submit"
-              className="mx-auto mt-3 cursor-pointer border border-black bg-white px-8 py-2.5 text-lg font-semibold transition hover:bg-black hover:text-white"
+              disabled={submitting}
+              className="mx-auto mt-3 cursor-pointer border border-black bg-white px-8 py-2.5 text-lg font-semibold transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {t.send}
+              {submitting ? t.sending : t.send}
             </button>
           </form>
         )}

@@ -95,5 +95,10 @@ export const SOCIALS = {
 
 export const BOOKING = {
   title: 'הזמנת מקום',
-  subtitle: 'מלאו את הפרטים ונחזור אליכם בהקדם.',
+  /**
+   * Shown on the last screen of the booking dialog, above the confirm button.
+   * TODO(owner): replace with Villetta's real cancellation policy before the flow goes live.
+   */
+  terms:
+    'ההזמנה ממתינה לאישור טלפוני מצדנו, ואינה סופית עד לאישור זה. מדיניות הביטול המלאה תימסר בשיחה עם נציג.',
 }
