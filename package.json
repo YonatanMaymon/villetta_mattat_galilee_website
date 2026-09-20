@@ -6,7 +6,9 @@
     "dev": "concurrently -n site,api -c cyan,magenta \"vite\" \"npm:dev:api\"",
     "dev:api": "tsx watch --env-file-if-exists=.env.local server/index.ts",
     "start": "tsx server/index.ts",
+    "dev:worker": "npm run build && wrangler dev",
     "check:live": "tsx scripts/check-live.ts",
+    "deploy": "npm run build && wrangler deploy",
     "build": "tsc && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "test": "vitest run",
@@ -40,7 +42,8 @@
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "wrangler": "^4.135.0"
   },
   "private": true
 }

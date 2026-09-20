@@ -1,0 +1,26 @@
+# Cloudflare deployment: the prerendered site (dist/) and the booking API in one Worker.
+#
+#   npx wrangler login
+#   npx wrangler secret put SMOOBU_API_KEY        # and SMOOBU_API_SECRET, SMOOBU_ICAL_URL
+#   npm run deploy
+#
+# Secrets are set with `wrangler secret put`, never written in this file. Locally, wrangler reads them
+# from .dev.vars (git-ignored).
+name = "villetta"
+main = "worker/index.ts"
+compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Unknown addresses get the prerendered 404 page.
+not_found_handling = "404-page"
+# /gallery is served from gallery/index.html, and /gallery/ redirects to /gallery, matching the canonicals.
+html_handling = "drop-trailing-slash"
+# Only the API runs Worker code; pages and images come straight from the static assets.
+run_worker_first = ["/api/*"]
+
+# Non-secret settings. These two identify the apartment; they are not credentials.
+[vars]
+SMOOBU_APARTMENT_ID = "REPLACE_WITH_APARTMENT_ID"
+SMOOBU_CUSTOMER_ID = "REPLACE_WITH_CUSTOMER_ID"

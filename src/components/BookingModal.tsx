@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, type FormEvent, type ReactNode } from 'react'
 import Modal from './Modal'
 import StepIndicator from './StepIndicator'
+import Turnstile from './Turnstile'
 import { PHONE_DISPLAY, PHONE_HREF } from '../data/content'
 import { useAvailability } from '../hooks/useAvailability'
 import { useQuote } from '../hooks/useQuote'
@@ -27,7 +28,7 @@ const backButtonClass =
   'cursor-pointer border border-black px-6 py-3 transition hover:bg-black hover:text-white'
 
 type Step = 1 | 2 | 3
-type FormError = 'datesTaken' | 'rateLimited' | 'sendFailed' | 'calendarError' | 'bookingUnavailable'
+type FormError = 'datesTaken' | 'rateLimited' | 'sendFailed' | 'calendarError' | 'bookingUnavailable' | 'botCheckFailed'
 
 interface Guest {
   name: string
@@ -54,6 +55,8 @@ function errorFor(error: unknown): FormError {
       return 'datesTaken'
     case 'rate_limited':
       return 'rateLimited'
+    case 'bot_check_failed':
+      return 'botCheckFailed'
     case 'calendar_unavailable':
       return 'calendarError'
     case 'booking_unavailable':
@@ -81,6 +84,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [selection, setSelection] = useState<Selection>(EMPTY_SELECTION)
   const [guest, setGuest] = useState<Guest>(EMPTY_GUEST)
   const [website, setWebsite] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [error, setError] = useState<FormError | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmedRef, setConfirmedRef] = useState<string | null>(null)
@@ -104,6 +108,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     setSelection(EMPTY_SELECTION)
     setGuest(EMPTY_GUEST)
     setWebsite('')
+    setTurnstileToken(null)
     setError(null)
     setSubmitting(false)
     setConfirmedRef(null)
@@ -129,6 +134,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         departure: stay.departure,
         lang,
         website,
+        turnstileToken: turnstileToken ?? undefined,
       })
       setConfirmedRef(booking.ref)
     } catch (caught) {
@@ -302,6 +308,9 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                   <p className="border-s-2 border-brown ps-3 text-[13px] leading-5 text-neutral-800">
                     {t.securityDepositNote}
                   </p>
+
+                  {/* Renders nothing when Turnstile is not configured; the API skips the check to match. */}
+                  <Turnstile onToken={setTurnstileToken} />
 
                   <Actions
                     onBack={() => setStep(2)}

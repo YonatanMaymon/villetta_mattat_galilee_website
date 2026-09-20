@@ -21,6 +21,7 @@ import { createMailer, type Mailer } from './mail'
 import { PmsRejectedError, PmsUnavailableError, type PropertyManagement } from './pms'
 import { createRateLimiter } from './rateLimit'
 import { createSmoobuClient } from './smoobu'
+import { createTurnstileVerifier, skipTurnstile, type TurnstileVerifier } from './turnstile'
 
 export interface AppDeps {
   fetch?: typeof fetch
@@ -33,9 +34,11 @@ export interface AppDeps {
   /** Replaces the real Smoobu API (the dev server's demo calendar, and tests). */
   pms?: PropertyManagement
   newRef?: () => string
+  /** Replaces the Turnstile check (tests). */
+  verifyTurnstile?: TurnstileVerifier
 }
 
-type ErrorStatus = 400 | 409 | 413 | 429 | 500 | 503
+type ErrorStatus = 400 | 403 | 409 | 413 | 429 | 500 | 503
 
 const fail = (c: Context, error: ApiErrorCode, status: ErrorStatus) => c.json<ApiError>({ error }, status)
 
@@ -125,8 +128,15 @@ export function createApp(env: Env, deps: AppDeps = {}) {
 
   // Generous enough for a long contact message, small enough that nobody can post a file here.
   const limitBody = bodyLimit({ maxSize: 32 * 1024, onError: (c) => fail(c, 'invalid_request', 413) })
-  const allowBooking = createRateLimiter({ limit: 5, windowMs: 10 * 60_000, now: deps.now })
+  // A booking blocks real dates in Smoobu and nothing is charged, so the allowance is deliberately small.
+  const allowBooking = createRateLimiter({ limit: 3, windowMs: 60 * 60_000, now: deps.now })
   const allowContact = createRateLimiter({ limit: 5, windowMs: 10 * 60_000, now: deps.now })
+
+  const verifyTurnstile =
+    deps.verifyTurnstile ?? (env.TURNSTILE_SECRET ? createTurnstileVerifier(env.TURNSTILE_SECRET, deps.fetch) : skipTurnstile)
+  if (!deps.verifyTurnstile && !env.TURNSTILE_SECRET) {
+    console.warn('TURNSTILE_SECRET is not set: bookings are accepted without the bot check.')
+  }
 
   const app = new Hono().basePath('/api')
 
@@ -186,6 +196,8 @@ export function createApp(env: Env, deps: AppDeps = {}) {
       return c.json<BookingResponse>({ ref: newRef(), nights: 0, amount: 0, currency: SUPPORTED_CURRENCY })
     }
     if (!allowBooking(clientKey(c))) return fail(c, 'rate_limited', 429)
+    // Checked before Smoobu is touched, so a script cannot even read prices in bulk through this route.
+    if (!(await verifyTurnstile(request.turnstileToken, clientKey(c)))) return fail(c, 'bot_check_failed', 403)
 
     const check = validateStay(request.arrival, request.departure, today())
     if (!check.ok) return fail(c, check.error, check.error === 'dates_unavailable' ? 409 : 400)

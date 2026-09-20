@@ -3,7 +3,7 @@ import { todayInBookingZone } from '../shared/dates'
 import { createApp, type AppDeps } from './app'
 import type { Env } from './env'
 import { demoPms } from './fakes'
-import type { Mailer } from './mail'
+import { logMail } from './logMail'
 
 /**
  * The API as a plain Node server, so it runs on any host that can run Node. Hono itself is
@@ -26,12 +26,9 @@ if (!hasCalendar) {
   deps.pms = demoPms(todayInBookingZone())
 }
 
-// Without a mail provider, emails are printed rather than dropped silently.
+// Without a mail provider, emails are logged rather than dropped silently.
 if (!hasMail) {
-  const printMail: Mailer = async (mail) => {
-    console.log(`\n--- email (not sent: no RESEND_API_KEY) ---\nto: ${mail.to ?? env.NOTIFY_TO_EMAIL ?? 'owner'}\nsubject: ${mail.subject}\n${mail.text}\n---\n`)
-  }
-  deps.sendMail = printMail
+  deps.sendMail = logMail
 }
 
 const { app } = createApp(env, deps)
