@@ -71,5 +71,7 @@ export const FOOTER = {
 
 export const BOOKING = {
   title: 'Book Your Stay',
-  subtitle: "Fill in your details and we'll get back to you shortly.",
+  /** See the Hebrew file: this text still needs the owner's real cancellation policy. */
+  terms:
+    'Your booking is held pending our telephone confirmation and is not final until then. The full cancellation policy will be given to you when we call.',
 }
