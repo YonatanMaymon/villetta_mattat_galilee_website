@@ -54,12 +54,16 @@ export default function Header({ onBook }: HeaderProps) {
 
   const currentPath = stripLang(useLocation().pathname)
 
+  // At the top the header is transparent and needs no bottom padding, but the open menu gives it a
+  // background, and without padding the logo would sit on its bottom edge.
+  const padding = scrolled ? 'py-2' : menuOpen ? 'py-4' : 'pt-4'
+
   return (
     <header
       ref={headerRef}
       className={`fixed inset-x-0 top-0 z-30 grid grid-cols-[1fr_auto_1fr] items-center px-4 text-white transition-all duration-300 sm:px-10 ${
         scrolled || menuOpen ? 'bg-black/85 shadow-lg shadow-black/20 backdrop-blur-md' : 'bg-transparent'
-      } ${scrolled ? 'py-2' : 'pt-4'}`}
+      } ${padding}`}
     >
       {/* Start side: menu + language switch (on phones the switch lives in the menu) */}
       <div className="flex items-center gap-4 justify-self-start">
