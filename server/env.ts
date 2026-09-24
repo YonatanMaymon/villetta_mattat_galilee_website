@@ -24,4 +24,10 @@ export interface Env {
   NOTIFY_TO_EMAIL?: string
   /** Verified sender address, e.g. `Villetta <bookings@your-domain>`. */
   MAIL_FROM?: string
+
+  /**
+   * Cloudflare Turnstile secret key, paired with VITE_TURNSTILE_SITE_KEY in the browser. Unset means
+   * bookings are accepted without the bot check (fine locally, not for a public site).
+   */
+  TURNSTILE_SECRET?: string
 }

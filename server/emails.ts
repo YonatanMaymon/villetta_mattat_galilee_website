@@ -1,4 +1,5 @@
 import { nightsBetween } from '../shared/dates'
+import { formatShekels } from '../shared/money'
 import type { BookingRequest, ContactRequest, Lang } from '../shared/reservation'
 import type { OutgoingMail } from './mail'
 
@@ -24,7 +25,7 @@ export function formatDate(iso: string, lang: Lang = 'he'): string {
 
 const nightsHe = (n: number) => (n === 1 ? 'לילה אחד' : `${n} לילות`)
 const nightsEn = (n: number) => (n === 1 ? '1 night' : `${n} nights`)
-const shekels = (amount: number) => `₪${amount.toLocaleString('en-US')}`
+const shekels = (amount: number) => `₪${formatShekels(amount)}`
 
 export interface Row {
   label: string

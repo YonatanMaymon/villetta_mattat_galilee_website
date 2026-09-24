@@ -1,3 +1,5 @@
+import { formatShekels } from '../../shared/money'
+
 /** UI copy (labels, buttons, aria text). Page content lives in src/data and src/data/en. */
 const he = {
   menu: 'תפריט',
@@ -45,7 +47,7 @@ const he = {
   selectDates: 'בחרו תאריכי הגעה ועזיבה',
   clearDates: 'ניקוי תאריכים',
   total: 'סה"כ',
-  money: (n: number) => `${n.toLocaleString('en-US')}₪`,
+  money: (n: number) => `${formatShekels(n)}₪`,
   guestDetails: 'מלאו את פרטיכם ונחזור אליכם לאישור.',
   reserveNow: 'הזמינו עכשיו',
   continue: 'המשך',
@@ -61,10 +63,11 @@ const he = {
   datesTaken: 'התאריכים שבחרתם כבר נתפסו. בחרו תאריכים אחרים.',
   sendFailed: 'לא הצלחנו לשלוח את הבקשה. נסו שוב או התקשרו אלינו.',
   rateLimited: 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.',
+  botCheckFailed: 'לא הצלחנו לאמת שאתם לא רובוט. רעננו את העמוד ונסו שוב, או התקשרו אלינו.',
   bookingUnavailable: 'ההזמנה המקוונת אינה זמינה כרגע. התקשרו אלינו ונשמח לעזור.',
   bookingByPhone: 'ההזמנה מתבצעת טלפונית. בדקו את התאריכים הפנויים ביומן והתקשרו אלינו.',
   securityDepositNote:
-    'לפני ההגעה נבקש פרטי כרטיס אשראי כפיקדון לביטחון בלבד. הכרטיס לא יחויב, אלא אם ייגרם נזק לווילה.',
+    'לפני ההגעה נבקש פרטי כרטיס אשראי כפיקדון. הכרטיס יחויב רק אם ייגרם נזק לווילה, או בביטול מאוחר לפי מדיניות הביטול.',
   bookingReceived: 'קיבלנו את בקשת ההזמנה!',
   awaitingConfirmation:
     'התאריכים שמורים עבורכם ונחזור אליכם טלפונית לאישור סופי. לא בוצע חיוב.',
@@ -117,7 +120,7 @@ const en: Strings = {
   selectDates: 'Select your arrival and departure dates',
   clearDates: 'Clear dates',
   total: 'Total',
-  money: (n) => `₪${n.toLocaleString('en-US')}`,
+  money: (n) => `₪${formatShekels(n)}`,
   guestDetails: 'Leave your details and we will get back to you to confirm.',
   reserveNow: 'Reserve now',
   continue: 'Continue',
@@ -133,10 +136,11 @@ const en: Strings = {
   datesTaken: 'Those dates have just been taken. Please choose different dates.',
   sendFailed: "We couldn't send your request. Please try again or call us.",
   rateLimited: 'Too many attempts. Please try again in a few minutes.',
+  botCheckFailed: "We couldn't confirm you are not a robot. Please refresh the page and try again, or call us.",
   bookingUnavailable: 'Online booking is unavailable right now. Please call us and we will be glad to help.',
   bookingByPhone: 'Bookings are made by phone. Check the free dates in the calendar and give us a call.',
   securityDepositNote:
-    'Before arrival we will ask for credit card details as a security deposit only. The card is not charged unless the villa is damaged.',
+    'Before arrival we will ask for credit card details as a deposit. The card is charged only if the villa is damaged, or for a late cancellation under the policy above.',
   bookingReceived: 'We received your booking request!',
   awaitingConfirmation: 'Your dates are held and we will call you to confirm. Nothing has been charged.',
   bookingRef: 'Reference',

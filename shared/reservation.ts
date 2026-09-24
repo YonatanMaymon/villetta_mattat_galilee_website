@@ -22,6 +22,8 @@ export const bookingSchema = z.object({
   departure: isoDate,
   lang: z.enum(LANGS),
   website: honeypot,
+  /** Cloudflare Turnstile token. Absent when Turnstile is not configured (local development). */
+  turnstileToken: z.string().max(4096).optional(),
 })
 
 export const contactSchema = z.object({
@@ -68,6 +70,7 @@ export type ApiErrorCode =
   | 'booking_unavailable'
   | 'send_failed'
   | 'rate_limited'
+  | 'bot_check_failed'
 
 export interface ApiError {
   error: ApiErrorCode

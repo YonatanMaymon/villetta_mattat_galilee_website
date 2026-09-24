@@ -12,6 +12,11 @@ dist-ssr/
 !.env.example
 *.local
 
+# Cloudflare: local secrets for `wrangler dev`, and its build cache
+.dev.vars
+.dev.vars.*
+.wrangler/
+
 # Logs
 *.log
 npm-debug.log*

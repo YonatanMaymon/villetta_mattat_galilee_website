@@ -140,12 +140,51 @@ describe('POST /api/booking', () => {
     expect((await book({ name: '' })).status).toBe(400)
   })
 
-  it('rate-limits one caller without affecting another', async () => {
+  it('allows only three bookings per caller, without affecting another caller', async () => {
     const { book } = harness()
-    // The first booking succeeds; the rest are refused as duplicates, but all five count against the limit.
-    for (let i = 0; i < 5; i++) await book({}, '198.51.100.7')
+    // Every attempt counts, successful or not: three are let through, the fourth is refused.
+    for (let i = 0; i < 3; i++) expect((await book({}, '198.51.100.7')).status).not.toBe(429)
     expect((await book({}, '198.51.100.7')).status).toBe(429)
     expect((await book({ arrival: '2026-12-01', departure: '2026-12-03' }, '198.51.100.9')).status).toBe(200)
+  })
+
+  it('refuses a booking that fails the bot check, before touching Smoobu', async () => {
+    const pms = createFakePms({ nightlyPrice: () => 2200 })
+    const { app } = createApp({}, { pms, today: () => TODAY, sendMail: async () => {}, verifyTurnstile: async () => false })
+    const response = await app.request('/api/booking', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...GUEST, arrival: ARRIVAL, departure: DEPARTURE, turnstileToken: 'bad' }),
+    })
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({ error: 'bot_check_failed' })
+    expect(pms.reservations).toHaveLength(0)
+  })
+
+  it('passes the token through to the verifier', async () => {
+    const seen: (string | undefined)[] = []
+    const { app } = createApp({}, {
+      pms: createFakePms({ nightlyPrice: () => 2200 }),
+      today: () => TODAY,
+      sendMail: async () => {},
+      verifyTurnstile: async (token) => {
+        seen.push(token)
+        return true
+      },
+    })
+    const response = await app.request('/api/booking', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...GUEST, arrival: ARRIVAL, departure: DEPARTURE, turnstileToken: 'the-token' }),
+    })
+    expect(response.status).toBe(200)
+    expect(seen).toEqual(['the-token'])
+  })
+
+  it('accepts a booking with no token when Turnstile is not configured', async () => {
+    // Local development, and any deploy made before the keys are set.
+    const { book } = harness()
+    expect((await book()).status).toBe(200)
   })
 
   it('does not lose a booking Smoobu accepted when the email fails', async () => {
