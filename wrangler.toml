@@ -22,5 +22,5 @@ run_worker_first = ["/api/*"]
 
 # Non-secret settings. These two identify the apartment; they are not credentials.
 [vars]
-SMOOBU_APARTMENT_ID = "REPLACE_WITH_APARTMENT_ID"
-SMOOBU_CUSTOMER_ID = "REPLACE_WITH_CUSTOMER_ID"
+SMOOBU_APARTMENT_ID = "3514936"
+SMOOBU_CUSTOMER_ID = "1892906"
