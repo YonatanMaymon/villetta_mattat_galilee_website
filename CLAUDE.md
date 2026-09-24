@@ -55,8 +55,9 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - A 401 on one endpoint while `/api/me` returns 200 means signing or encoding, not bad credentials.
 - `POST /booking/checkApartmentAvailability` needs `SMOOBU_CUSTOMER_ID` and returns `prices: []` when the
   apartment has no nightly rates set.
-- Smoobu's totals do not equal the `/price` page table (e.g. 2 midweek nights: Smoobu 7,560 vs page 6,400).
-  The owner chose to show Smoobu's numbers.
+- The `/price` table (`src/data/price.ts`) is typed in by hand and must match Smoobu's rates: 4,200 weekday,
+  4,500 Friday/Saturday, 25% off 2 nights, 35% off 3+. After a rate change, compare with live
+  `GET /api/quote` answers. Smoobu's quote is what guests are charged.
 - To debug: write a throwaway script in the scratchpad that prints only status codes and field names.
 
 ## Conventions
@@ -85,7 +86,7 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
   MX, SPF and DKIM, or email on the domain stops working.
 - **Email:** Resend is on hold (a domain problem). Mail is logged via `server/logMail.ts`; the owner watches
   Smoobu. Setting `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on with no code change.
-- **Owner tasks:** update `/price` (`src/data/price.ts`) to match Smoobu; create Turnstile keys; once the
+- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%); create Turnstile keys; once the
   custom domain exists, change `VITE_SITE_URL` from the workers.dev address to it and redeploy.
 - **Not done yet:** a privacy notice on the booking form; a payment processor for the card deposit.
 
