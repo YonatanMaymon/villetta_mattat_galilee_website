@@ -10,6 +10,15 @@ name = "villetta"
 main = "worker/index.ts"
 compatibility_date = "2026-09-01"
 
+# The live domain; Cloudflare creates the DNS records and certificates on deploy. www only exists to be
+# redirected to the bare domain by a Redirect Rule in the dashboard (Rules > Redirect Rules).
+routes = [
+  { pattern = "mattat-galilee.co.il", custom_domain = true },
+  { pattern = "www.mattat-galilee.co.il", custom_domain = true },
+]
+# Off, so the site has one address: a second copy on *.workers.dev would compete with it in search results.
+workers_dev = false
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"
