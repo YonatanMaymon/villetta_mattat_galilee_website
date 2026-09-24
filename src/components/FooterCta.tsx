@@ -24,7 +24,7 @@ export default function FooterCta({ onBook }: FooterCtaProps) {
         <p dir="ltr" className="font-script text-[76px] leading-[0.8] sm:text-[155px]">
           {FOOTER.script}
         </p>
-        <h2 className="-mt-2 text-4xl font-normal sm:mt-14 sm:text-5xl">{FOOTER.title}</h2>
+        <h2 className="mt-7 text-4xl font-normal sm:mt-14 sm:text-5xl">{FOOTER.title}</h2>
         <p className="mt-6 text-xl">{FOOTER.subtitle}</p>
         <button
           type="button"
