@@ -67,7 +67,7 @@ const he = {
   bookingUnavailable: 'ההזמנה המקוונת אינה זמינה כרגע. התקשרו אלינו ונשמח לעזור.',
   bookingByPhone: 'ההזמנה מתבצעת טלפונית. בדקו את התאריכים הפנויים ביומן והתקשרו אלינו.',
   securityDepositNote:
-    'לפני ההגעה נבקש פרטי כרטיס אשראי כפיקדון לביטחון בלבד. הכרטיס לא יחויב, אלא אם ייגרם נזק לווילה.',
+    'לפני ההגעה נבקש פרטי כרטיס אשראי כפיקדון. הכרטיס יחויב רק אם ייגרם נזק לווילה, או בביטול מאוחר לפי מדיניות הביטול.',
   bookingReceived: 'קיבלנו את בקשת ההזמנה!',
   awaitingConfirmation:
     'התאריכים שמורים עבורכם ונחזור אליכם טלפונית לאישור סופי. לא בוצע חיוב.',
@@ -140,7 +140,7 @@ const en: Strings = {
   bookingUnavailable: 'Online booking is unavailable right now. Please call us and we will be glad to help.',
   bookingByPhone: 'Bookings are made by phone. Check the free dates in the calendar and give us a call.',
   securityDepositNote:
-    'Before arrival we will ask for credit card details as a security deposit only. The card is not charged unless the villa is damaged.',
+    'Before arrival we will ask for credit card details as a deposit. The card is charged only if the villa is damaged, or for a late cancellation under the policy above.',
   bookingReceived: 'We received your booking request!',
   awaitingConfirmation: 'Your dates are held and we will call you to confirm. Nothing has been charged.',
   bookingRef: 'Reference',

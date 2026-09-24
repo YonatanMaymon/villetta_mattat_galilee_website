@@ -95,10 +95,11 @@ export const SOCIALS = {
 
 export const BOOKING = {
   title: 'הזמנת מקום',
-  /**
-   * Shown on the last screen of the booking dialog, above the confirm button.
-   * TODO(owner): replace with Villetta's real cancellation policy before the flow goes live.
-   */
+  /** The cancellation policy, shown on the last screen of the booking dialog above the confirm button. */
   terms:
-    'ההזמנה ממתינה לאישור טלפוני מצדנו, ואינה סופית עד לאישור זה. מדיניות הביטול המלאה תימסר בשיחה עם נציג.',
+    'ההזמנה ממתינה לאישור טלפוני מצדנו ואינה סופית עד לאישור זה. התשלום על השהייה מתבצע בהגעה. ' +
+    'ביטול עד 8 ימים לפני ההגעה: ללא חיוב. ביטול 4 עד 7 ימים לפני ההגעה: חיוב של 50% ממחיר השהייה. ' +
+    'ביטול 3 ימים לפני ההגעה או פחות, או אי-הגעה: חיוב מלא. ' +
+    'אם התאריכים יוזמנו מחדש על ידי אורחים אחרים, החיוב יבוטל או יוחזר במלואו. ' +
+    'אם הנחיות פיקוד העורף או המצב הביטחוני מונעים את השהייה, הביטול ללא חיוב.',
 }

@@ -85,9 +85,8 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
   MX, SPF and DKIM, or email on the domain stops working.
 - **Email:** Resend is on hold (a domain problem). Mail is logged via `server/logMail.ts`; the owner watches
   Smoobu. Setting `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on with no code change.
-- **Owner tasks:** update `/price` (`src/data/price.ts`) to match Smoobu; replace the placeholder
-  cancellation text `BOOKING.terms` (`TODO(owner)`, both languages); set the real `VITE_SITE_URL` (the build
-  warns and uses example.com without it); create Turnstile keys; fill the two ids in `wrangler.toml`.
+- **Owner tasks:** update `/price` (`src/data/price.ts`) to match Smoobu; create Turnstile keys; once the
+  custom domain exists, change `VITE_SITE_URL` from the workers.dev address to it and redeploy.
 - **Not done yet:** a privacy notice on the booking form; a payment processor for the card deposit.
 
 ## Working notes
