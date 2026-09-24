@@ -37,6 +37,7 @@ const he = {
   langButtonLabel: 'Switch to English',
   langCode: 'en',
   priceText: (n: number) => `${n}₪`,
+  discountText: (percent: number) => `${percent}% הנחה`,
 
   // --- Booking dialog ---
   stepNofM: (n: number, total: number) => `שלב ${n} מתוך ${total}`,
@@ -111,6 +112,7 @@ const en: Strings = {
   langButtonLabel: 'מעבר לעברית',
   langCode: 'he',
   priceText: (n) => `₪${n}`,
+  discountText: (percent) => `${percent}% off`,
 
   stepNofM: (n, total) => `Step ${n} of ${total}`,
   arrival: 'Arrival',
