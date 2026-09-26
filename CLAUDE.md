@@ -83,14 +83,16 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 
 ## Status and open items
 
-- **Hosting:** everything on Cloudflare Workers. Deploy first to the free `*.workers.dev` address. A custom
-  domain later means moving its nameservers to Cloudflare: copy every existing DNS record first, above all
-  MX, SPF and DKIM, or email on the domain stops working.
+- **Hosting:** everything on Cloudflare Workers, on `mattat-galilee.co.il` (DNS at Cloudflare).
 - **Email:** Resend, sending from the verified subdomain `updates.mattat-galilee.co.il`. Setting
   `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on in both the Node server and the Worker;
   without all three, mail is only logged via `server/logMail.ts` (on Cloudflare: `wrangler tail`).
-- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%); once the
-  custom domain exists, change `VITE_SITE_URL` from the workers.dev address to it and redeploy.
+- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%).
+- **Domain:** `mattat-galilee.co.il` is served by the Worker (www redirects to it). `VITE_SITE_URL` is set
+  in the committed `.env.production`; the build fails if it is missing, rather than shipping example.com.
+- **Redirects:** the build writes `dist/_redirects` (Cloudflare static assets): 301 from each page's
+  trailing-slash address to the canonical one without it, plus the press page's pre-redesign Hebrew address
+  (`/כתבו-עלינו/`, since outside articles may link to it). No other old addresses are redirected.
 - **Not done yet:** a privacy notice on the booking form; a payment processor for the card deposit.
 
 ## Working notes
