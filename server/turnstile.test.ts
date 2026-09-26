@@ -6,12 +6,12 @@ const respond = (body: unknown, status = 200) =>
 
 describe('createTurnstileVerifier', () => {
   it('accepts a token Cloudflare says is good', async () => {
-    const verify = createTurnstileVerifier('secret', respond({ success: true }) as unknown as typeof fetch)
+    const verify = createTurnstileVerifier('secret', respond({ success: true, action: 'booking' }) as unknown as typeof fetch)
     expect(await verify('good-token', '203.0.113.1')).toBe(true)
   })
 
   it('sends the secret, the token and the caller address', async () => {
-    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ success: true })))
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ success: true, action: 'booking' })))
     const verify = createTurnstileVerifier('the-secret', fetchImpl as unknown as typeof fetch)
     await verify('the-token', '203.0.113.1')
 
@@ -24,7 +24,7 @@ describe('createTurnstileVerifier', () => {
   })
 
   it('omits an unknown caller address rather than sending the word "unknown"', async () => {
-    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ success: true })))
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ success: true, action: 'booking' })))
     const verify = createTurnstileVerifier('s', fetchImpl as unknown as typeof fetch)
     await verify('t', 'unknown')
 
@@ -33,10 +33,15 @@ describe('createTurnstileVerifier', () => {
   })
 
   it('refuses a missing token without calling Cloudflare', async () => {
-    const fetchImpl = respond({ success: true })
+    const fetchImpl = respond({ success: true, action: 'booking' })
     const verify = createTurnstileVerifier('secret', fetchImpl as unknown as typeof fetch)
     expect(await verify(undefined, undefined)).toBe(false)
     expect(fetchImpl).not.toHaveBeenCalled()
+  })
+
+  it('refuses a token solved for a different action', async () => {
+    const verify = createTurnstileVerifier('secret', respond({ success: true, action: 'contact' }) as unknown as typeof fetch)
+    expect(await verify('other-token', undefined)).toBe(false)
   })
 
   it('refuses a token Cloudflare rejects', async () => {

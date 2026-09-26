@@ -77,7 +77,9 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Never print, log or commit a value.** When debugging, print only lengths, booleans or status codes.
 - Git history is clean: an old stash and unpushed commits that held real credentials were purged from the
   owner's clone on 2026-09-20. If a credential ever does reach a commit, treat it as leaked and rotate it.
-- `VITE_TURNSTILE_SITE_KEY` is public and baked in at build time; `TURNSTILE_SECRET` is a Worker secret.
+- `VITE_TURNSTILE_SITE_KEY` is public and baked in at build time from the committed `.env.production`;
+  `TURNSTILE_SECRET` is a Worker secret. Tokens carry the action `TURNSTILE_ACTION` (`shared/reservation.ts`),
+  which the server checks, and are single-use, so the dialog remounts the widget after a failed attempt.
 
 ## Status and open items
 
@@ -87,7 +89,7 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Email:** Resend, sending from the verified subdomain `updates.mattat-galilee.co.il`. Setting
   `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on in both the Node server and the Worker;
   without all three, mail is only logged via `server/logMail.ts` (on Cloudflare: `wrangler tail`).
-- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%); create Turnstile keys; once the
+- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%); once the
   custom domain exists, change `VITE_SITE_URL` from the workers.dev address to it and redeploy.
 - **Not done yet:** a privacy notice on the booking form; a payment processor for the card deposit.
 
