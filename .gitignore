@@ -10,6 +10,8 @@ dist-ssr/
 .env
 .env.*
 !.env.example
+# Public build-time values only (the Turnstile site key); secrets never go here.
+!.env.production
 *.local
 
 # Cloudflare: local secrets for `wrangler dev`, and its build cache

@@ -4,6 +4,9 @@ import { useLanguage } from '../i18n/LanguageContext'
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
 
+/** False in local development with no site key: no widget, and the API skips the check to match. */
+export const turnstileEnabled = Boolean(SITE_KEY)
+
 interface TurnstileApi {
   render: (el: HTMLElement, options: Record<string, unknown>) => string
   remove: (id: string) => void
@@ -37,6 +40,8 @@ function loadScript(): Promise<void> {
 
 interface TurnstileProps {
   /** Called with a token once the visitor passes, and with null when it expires or errors. */
+  /** Checked by the server against the token, so it must match what the API expects. */
+  action: string
   onToken: (token: string | null) => void
 }
 
@@ -47,7 +52,7 @@ interface TurnstileProps {
  * With no VITE_TURNSTILE_SITE_KEY (local development) it renders nothing and reports a null token; the
  * API skips the check in that case too, so the flow still works end to end.
  */
-export default function Turnstile({ onToken }: TurnstileProps) {
+export default function Turnstile({ action, onToken }: TurnstileProps) {
   const { lang } = useLanguage()
   const holder = useRef<HTMLDivElement>(null)
   // Kept in a ref so re-renders from a new token do not tear down and rebuild the widget.
@@ -65,6 +70,7 @@ export default function Turnstile({ onToken }: TurnstileProps) {
         if (cancelled || !window.turnstile) return
         widgetId = window.turnstile.render(el, {
           sitekey: SITE_KEY,
+          action,
           language: lang,
           callback: (token: string) => report.current(token),
           'expired-callback': () => report.current(null),
@@ -77,7 +83,7 @@ export default function Turnstile({ onToken }: TurnstileProps) {
       cancelled = true
       if (widgetId) window.turnstile?.remove(widgetId)
     }
-  }, [lang])
+  }, [action, lang])
 
   if (!SITE_KEY) return null
   return <div ref={holder} className="flex justify-center" />

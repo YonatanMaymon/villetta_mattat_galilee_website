@@ -26,6 +26,12 @@ export const bookingSchema = z.object({
   turnstileToken: z.string().max(4096).optional(),
 })
 
+/**
+ * Sent with the Turnstile widget and checked by the server, so a token solved for some other form on a
+ * site sharing the widget cannot be spent on a booking.
+ */
+export const TURNSTILE_ACTION = 'booking'
+
 export const contactSchema = z.object({
   name: trimmed(120).min(1),
   phone: trimmed(40).min(5),

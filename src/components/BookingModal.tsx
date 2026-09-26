@@ -1,14 +1,14 @@
 import { lazy, Suspense, useState, type FormEvent, type ReactNode } from 'react'
 import Modal from './Modal'
 import StepIndicator from './StepIndicator'
-import Turnstile from './Turnstile'
+import Turnstile, { turnstileEnabled } from './Turnstile'
 import { PHONE_DISPLAY, PHONE_HREF } from '../data/content'
 import { useAvailability } from '../hooks/useAvailability'
 import { useQuote } from '../hooks/useQuote'
 import { useLanguage } from '../i18n/LanguageContext'
 import { ApiRequestError, submitBooking } from '../lib/api'
 import { EMPTY_SELECTION, nightsBetween, type Selection } from '../../shared/dates'
-import type { Lang } from '../../shared/reservation'
+import { TURNSTILE_ACTION, type Lang } from '../../shared/reservation'
 
 // The calendar and its stylesheet are only fetched once someone opens the dialog.
 const DateRangePicker = lazy(() => import('./DateRangePicker'))
@@ -85,6 +85,8 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [guest, setGuest] = useState<Guest>(EMPTY_GUEST)
   const [website, setWebsite] = useState('')
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  // A token is spent the moment the server checks it, so every failed attempt needs a new widget.
+  const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState<FormError | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmedRef, setConfirmedRef] = useState<string | null>(null)
@@ -140,6 +142,8 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     } catch (caught) {
       const code = errorFor(caught)
       setError(code)
+      setTurnstileToken(null)
+      setAttempt((n) => n + 1)
       // Someone else took the dates while this guest was filling in the form: send them back to choose again.
       if (code === 'datesTaken') goToDates()
     } finally {
@@ -310,13 +314,14 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                   </p>
 
                   {/* Renders nothing when Turnstile is not configured; the API skips the check to match. */}
-                  <Turnstile onToken={setTurnstileToken} />
+                  <Turnstile key={attempt} action={TURNSTILE_ACTION} onToken={setTurnstileToken} />
 
                   <Actions
                     onBack={() => setStep(2)}
                     backLabel={t.back}
                     submitLabel={submitting ? t.sending : t.confirmBooking}
-                    disabled={submitting}
+                    // Wait for the bot check, or the booking would be refused for a missing token.
+                    disabled={submitting || (turnstileEnabled && !turnstileToken)}
                   />
                 </form>
               )}

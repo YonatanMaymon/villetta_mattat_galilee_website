@@ -1,3 +1,5 @@
+import { TURNSTILE_ACTION } from '../shared/reservation'
+
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 const TIMEOUT_MS = 8_000
 
@@ -30,8 +32,8 @@ export function createTurnstileVerifier(secret: string, fetchImpl: typeof fetch 
     try {
       const response = await fetchImpl(VERIFY_URL, { method: 'POST', body, signal: AbortSignal.timeout(TIMEOUT_MS) })
       if (!response.ok) return false
-      const json = (await response.json().catch(() => null)) as { success?: boolean } | null
-      return json?.success === true
+      const json = (await response.json().catch(() => null)) as { success?: boolean; action?: string } | null
+      return json?.success === true && json.action === TURNSTILE_ACTION
     } catch {
       // Cloudflare unreachable. Refuse rather than wave the booking through: a failure here is rare, and
       // the guest is shown the phone number.

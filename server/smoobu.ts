@@ -13,7 +13,7 @@ const TIMEOUT_MS = 10_000
 /** Rates are requested in slices so no single request asks for more than Smoobu may allow. */
 const RATES_SLICE_DAYS = 90
 /** Written into every website reservation so the owner can tell it apart from a confirmed booking. */
-export const PENDING_NOTICE = 'בקשה מהאתר – ממתין לאישור | Website request – awaiting confirmation'
+export const PENDING_NOTICE = 'בקשה מהאתר – ממתין לאישור'
 
 export interface SmoobuConfig {
   apiKey: string
