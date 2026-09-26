@@ -84,8 +84,9 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Hosting:** everything on Cloudflare Workers. Deploy first to the free `*.workers.dev` address. A custom
   domain later means moving its nameservers to Cloudflare: copy every existing DNS record first, above all
   MX, SPF and DKIM, or email on the domain stops working.
-- **Email:** Resend is on hold (a domain problem). Mail is logged via `server/logMail.ts`; the owner watches
-  Smoobu. Setting `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on with no code change.
+- **Email:** Resend, sending from the verified subdomain `updates.mattat-galilee.co.il`. Setting
+  `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on in both the Node server and the Worker;
+  without all three, mail is only logged via `server/logMail.ts` (on Cloudflare: `wrangler tail`).
 - **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%); create Turnstile keys; once the
   custom domain exists, change `VITE_SITE_URL` from the workers.dev address to it and redeploy.
 - **Not done yet:** a privacy notice on the booking form; a payment processor for the card deposit.

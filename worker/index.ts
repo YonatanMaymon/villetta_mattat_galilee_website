@@ -24,7 +24,10 @@ let app: ReturnType<typeof createApp>['app'] | undefined
 
 /** Built once per Worker instance, so the availability cache and rate-limit counters survive requests. */
 function boot(env: Bindings) {
-  app ??= createApp(env, { sendMail: logMail }).app
+  // With all three mail secrets set the app sends through Resend (its default); without them, emails
+  // are logged to `wrangler tail` rather than dropped silently.
+  const hasMail = Boolean(env.RESEND_API_KEY && env.NOTIFY_TO_EMAIL && env.MAIL_FROM)
+  app ??= createApp(env, hasMail ? {} : { sendMail: logMail }).app
   return app
 }
 
