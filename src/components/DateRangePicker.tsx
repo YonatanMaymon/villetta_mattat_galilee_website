@@ -39,7 +39,9 @@ export default function DateRangePicker({ busy, value, onChange }: DateRangePick
       locale={lang === 'he' ? he : enUS}
       selected={selected}
       // Selection is handled by pickDay so the departure rules (turnover day, no crossing bookings) apply.
-      onDayClick={(day) => onChange(pickDay(busy, value, isoFromLocalDate(day), rules))}
+      // Passing onSelect (not onDayClick) also makes `selected` the only range shown: without it DayPicker
+      // keeps its own copy and, after a full range, stretches it instead of showing the new arrival.
+      onSelect={(_range, day) => onChange(pickDay(busy, value, isoFromLocalDate(day), rules))}
       disabled={(day) => !isDaySelectable(busy, value, isoFromLocalDate(day), rules)}
       // The chosen departure day may be another guest's first night; it isn't struck through then.
       modifiers={{
