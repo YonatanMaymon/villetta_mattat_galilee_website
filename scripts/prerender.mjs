@@ -22,10 +22,13 @@ const template = await readFile(path.join(DIST, 'index.html'), 'utf8')
 const escapeHtml = (value) =>
   String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-const headTag = ({ tag, attrs }) =>
-  `<${tag} ${Object.entries(attrs)
+// A script tag (the JSON-LD) carries its contents in `text`, already safe to inline (see src/seo/meta.ts).
+const headTag = ({ tag, attrs, text }) => {
+  const open = `<${tag} ${Object.entries(attrs)
     .map(([name, value]) => `${name}="${escapeHtml(value)}"`)
     .join(' ')} data-seo>`
+  return text === undefined ? open : `${open}${text}</${tag}>`
+}
 
 // Replacers are functions so `$` sequences in the content are never treated as patterns.
 function buildPage(url) {

@@ -20,9 +20,11 @@ export default function Seo() {
     document.title = title
 
     document.head.querySelectorAll(`[${SEO_ATTR}]`).forEach((node) => node.remove())
-    for (const { tag, attrs } of tags) {
+    for (const { tag, attrs, text } of tags) {
       const node = document.createElement(tag)
       for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, value)
+      // The JSON-LD script. Google reads the page after this runs, so dropping it here would hide it.
+      if (text !== undefined) node.textContent = text
       node.setAttribute(SEO_ATTR, '')
       document.head.appendChild(node)
     }

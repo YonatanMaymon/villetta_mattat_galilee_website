@@ -88,6 +88,8 @@ export const FOOTER = {
 
 export const SOCIALS = {
   instagram: 'https://www.instagram.com/viletamatatgalil/',
+  // Not in the footer icons; listed in the business data Google reads (src/seo/meta.ts).
+  facebook: 'https://www.facebook.com/villettamattatgalilee/',
   youtube: 'https://www.youtube.com/@villettamattatgalilee',
   waze: 'https://waze.com/ul?q=%D7%95%D7%99%D7%9C%D7%98%D7%94%20%D7%9E%D7%AA%D7%AA%20%D7%92%D7%9C%D7%99%D7%9C&z=10&navigate=yes',
 }

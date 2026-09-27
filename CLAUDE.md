@@ -22,6 +22,11 @@ Marketing site and online booking for a villa (Villetta Mattat Galilee). Hebrew-
   the source of truth) and `src/data/en/*.ts` (English overlays). UI labels live in `src/i18n/strings.ts`,
   where `en: Strings` is compile-checked against `he`. Components hold no copy: add every string in both
   languages.
+- **SEO:** each page's Google title and description live in `src/data/seo.ts` (and `en/seo.ts`), written
+  with the words people search for (צימר זוגי, ג'קוזי, סאונה, גליל); the page headings are separate.
+  `src/seo/meta.ts` builds the head tags, plus JSON-LD on the home pages: `LodgingBusiness`, from the
+  contact, price and social data, and on `/` only `WebSite`, which gives Google the site name. Never mark up
+  the site's own testimonials as ratings: Google treats reviews a business publishes about itself as spam.
 - **Booking API:** `server/` (Hono, runtime-agnostic) with two entries: `server/index.ts` (Node, local) and
   `worker/index.ts` (Cloudflare Worker: `/api/*` here, everything else served from `dist/` as static assets).
   Routes: `GET /api/availability`, `GET /api/quote`, `POST /api/booking`, `POST /api/contact`. `shared/` holds
@@ -87,7 +92,10 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Email:** Resend, sending from the verified subdomain `updates.mattat-galilee.co.il`. Setting
   `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on in both the Node server and the Worker;
   without all three, mail is only logged via `server/logMail.ts` (on Cloudflare: `wrangler tail`).
-- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%).
+- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%). In Search Console, submit
+  `/sitemap.xml` and request indexing of the home page (search results still showed old-site pages in
+  September 2026). Set up a Google Business Profile, where the map results for "צימר במתת" come from, and
+  ask guests for Google reviews there.
 - **Domain:** `mattat-galilee.co.il` is served by the Worker (www redirects to it). `VITE_SITE_URL` is set
   in the committed `.env.production`; the build fails if it is missing, rather than shipping example.com.
 - **Redirects:** the build writes `dist/_redirects` (Cloudflare static assets): 301 from each page's
