@@ -84,7 +84,6 @@ export const FOOTER = {
   subtitle: 'זמינים לכל שאלה! לשירותכם!',
   socialLabel: 'חפשו אותנו גם ב',
   copyright: '© כל הזכויות שמורות, וילטה מתת גליל 2023',
-  credit: { text: 'created by | HD', href: 'https://www.hakerdesign.co.il' },
 }
 
 export const SOCIALS = {

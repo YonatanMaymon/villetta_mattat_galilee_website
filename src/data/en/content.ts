@@ -66,7 +66,6 @@ export const FOOTER = {
   subtitle: 'Available for any question! At your service!',
   socialLabel: 'Find us also on',
   copyright: '© All rights reserved, Villetta Mattat Galilee 2023',
-  credit: { text: 'created by | HD', href: 'https://www.hakerdesign.co.il' },
 }
 
 export const BOOKING = {
