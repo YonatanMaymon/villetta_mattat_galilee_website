@@ -12,8 +12,9 @@ const { render, getHead, PAGE_PATHS, SITE_URL, alternatesFor, localizePath } = a
   pathToFileURL(SSR_ENTRY).href
 )
 
+// Without it every canonical, hreflang and sitemap URL would tell Google the site is example.com.
 if (SITE_URL === 'https://example.com') {
-  console.warn('! VITE_SITE_URL is not set: canonical, hreflang and sitemap URLs use https://example.com')
+  throw new Error('VITE_SITE_URL is not set (see .env.production)')
 }
 
 const template = await readFile(path.join(DIST, 'index.html'), 'utf8')
@@ -70,3 +71,20 @@ await write(
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${sitemapEntries.join('\n')}\n</urlset>\n`,
 )
 await write('robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`)
+
+// Cloudflare applies these before serving files. Its own trailing-slash handling answers 307 (temporary);
+// a permanent 301 tells search engines that `/villetta/` and `/villetta` are one page, the one without.
+const slashRedirects = urls.filter((url) => url !== '/').map((url) => [`${url}/`, url])
+
+// The press page's address before the redesign. Articles about the villa may still link to it; the
+// redirect keeps those visitors, and the credit Google gives for the links. Can go once Google has
+// long since dropped the old address (well into 2027).
+const movedPages = [
+  ['/כתבו-עלינו/', '/written-about-us'],
+  ['/כתבו-עלינו', '/written-about-us'],
+]
+
+await write(
+  '_redirects',
+  [...slashRedirects, ...movedPages].map(([from, to]) => `${from} ${to} 301`).join('\n') + '\n',
+)
