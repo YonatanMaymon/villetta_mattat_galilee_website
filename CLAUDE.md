@@ -100,5 +100,5 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - Windows with Git Bash. Node 24. Scripts run through `tsx`.
 - Writing `\n` through a Python heredoc can turn into a real newline inside a string literal; check the file
   after such an edit, or use the Edit tool.
-- `main` is updated by pull requests merged on GitHub. Work on a feature branch, and commit or push only when
-  the owner asks.
+- `main` is updated by pull requests merged on GitHub. Start every new change on a new branch off an
+  up-to-date `main`, unless the owner names a branch to use. Commit or push only when the owner asks.
