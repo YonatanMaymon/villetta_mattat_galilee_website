@@ -6,6 +6,7 @@ import * as heGallery from '../data/gallery'
 import * as heOurStory from '../data/ourStory'
 import * as hePress from '../data/press'
 import * as hePrice from '../data/price'
+import * as heSeo from '../data/seo'
 import * as heVilletta from '../data/villetta'
 import * as enArea from '../data/en/area'
 import * as enContact from '../data/en/contact'
@@ -15,6 +16,7 @@ import * as enGallery from '../data/en/gallery'
 import * as enOurStory from '../data/en/ourStory'
 import * as enPress from '../data/en/press'
 import * as enPrice from '../data/en/price'
+import * as enSeo from '../data/en/seo'
 import * as enVilletta from '../data/en/villetta'
 
 const he = {
@@ -26,6 +28,7 @@ const he = {
   ourStory: heOurStory,
   press: hePress,
   price: hePrice,
+  seo: heSeo,
   villetta: heVilletta,
 }
 
@@ -41,6 +44,7 @@ const en: SiteData = {
   ourStory: enOurStory,
   press: enPress,
   price: enPrice,
+  seo: enSeo,
   villetta: enVilletta,
 }
 
