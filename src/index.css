@@ -37,6 +37,34 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* A clear ring around whatever the keyboard is on. currentColor keeps it white on the dark header and
+   photos and dark on light sections. Form fields show focus with their darker border instead. */
+:where(a, button, summary, [tabindex]):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* Pause/play buttons on moving content (AutoplayToggle) stay invisible unless the visitor turned them on in
+   the accessibility statement (src/lib/pauseButtons.ts). They stay in the Tab order and are read out by
+   screen readers, and appear as soon as the keyboard reaches them, so the moving content can always be
+   stopped. */
+[data-autoplay-toggle] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-autoplay-toggle]:focus-visible,
+:root[data-pause-buttons] [data-autoplay-toggle] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);

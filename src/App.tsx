@@ -9,6 +9,7 @@ import GalleryPage from './pages/GalleryPage'
 import PressPage from './pages/PressPage'
 import PricePage from './pages/PricePage'
 import ContactPage from './pages/ContactPage'
+import LegalPage from './pages/LegalPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 // The same pages are served twice: at the root (Hebrew) and under /en (English).
@@ -23,6 +24,8 @@ const pageRoutes = (
     <Route path="written-about-us" element={<PressPage />} />
     <Route path="price" element={<PricePage />} />
     <Route path="contact" element={<ContactPage />} />
+    <Route path="accessibility" element={<LegalPage page="accessibility" />} />
+    <Route path="privacy" element={<LegalPage page="privacy" />} />
   </>
 )
 

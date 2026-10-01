@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 *.tsbuildinfo
+# Resized photos and their manifest, made by scripts/images.mjs on predev/prebuild
+public/assets/img/
+src/generated/
 
 # Environment
 .env

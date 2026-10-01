@@ -8,6 +8,7 @@ export const CONTACT_HERO = {
 
 export const CONTACT_DETAILS = {
   phone: { ...HE_DETAILS.phone, label: 'Phone', note: 'Sharon Mimon' },
+  whatsapp: { ...HE_DETAILS.whatsapp, label: 'WhatsApp', value: 'Send us a message' },
   email: { ...HE_DETAILS.email, label: 'Email' },
   address: { ...HE_DETAILS.address, label: 'Our Address', value: '"Villetta Mattat Galilee" on Waze' },
 }

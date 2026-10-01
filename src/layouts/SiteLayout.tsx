@@ -5,6 +5,7 @@ import FooterCta from '../components/FooterCta'
 import BookingModal from '../components/BookingModal'
 import VideoModal from '../components/VideoModal'
 import AccessibilityButton from '../components/AccessibilityButton'
+import WhatsAppButton from '../components/WhatsAppButton'
 import Seo from '../seo/Seo'
 
 export interface SiteContext {
@@ -22,7 +23,7 @@ function ScrollToTop() {
   return null
 }
 
-/** Chrome shared by every page: header, footer CTA, floating button and modals. */
+/** Chrome shared by every page: header, footer CTA, floating buttons and modals. */
 export default function SiteLayout() {
   const [bookingOpen, setBookingOpen] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
@@ -38,6 +39,7 @@ export default function SiteLayout() {
       <FooterCta onBook={openBooking} />
 
       <AccessibilityButton />
+      <WhatsAppButton />
       <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </>

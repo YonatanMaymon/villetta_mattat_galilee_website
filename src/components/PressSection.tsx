@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
+import Picture from './Picture'
 import { useLanguage } from '../i18n/LanguageContext'
 
 export default function PressSection() {
@@ -17,7 +18,13 @@ export default function PressSection() {
       <div className="mx-auto grid max-w-[1710px] gap-14 lg:grid-cols-2 lg:gap-[90px]">
         {PRESS_ARTICLES.map((a) => (
           <article key={a.href}>
-            <img src={a.image} alt="" loading="lazy" className="aspect-[16/10.4] w-full object-cover" />
+            <Picture
+              src={a.image}
+              alt=""
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              loading="lazy"
+              className="aspect-[16/10.4] w-full object-cover"
+            />
             <p className="mt-[18px] text-[13px] leading-5">
               {a.outlet} | {a.published}
             </p>

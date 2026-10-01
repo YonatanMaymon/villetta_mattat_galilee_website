@@ -1,22 +1,27 @@
+import { Link } from 'react-router-dom'
 import SocialLinks from './SocialLinks'
 import { useLanguage } from '../i18n/LanguageContext'
+import { largestWebp } from '../lib/images'
 
 interface FooterCtaProps {
   onBook: () => void
 }
 
+const BACKGROUND = largestWebp('/assets/background-section.jpg')
+
 export default function FooterCta({ onBook }: FooterCtaProps) {
   const {
     t,
+    localize,
     data: {
-      content: { FOOTER },
+      content: { FOOTER, FOOTER_LINKS },
     },
   } = useLanguage()
 
   return (
     <footer
       className="relative flex min-h-screen flex-col items-center justify-center bg-cover bg-center px-4 text-center text-white"
-      style={{ backgroundImage: 'url(/assets/background-section.jpg)' }}
+      style={{ backgroundImage: `url(${BACKGROUND})` }}
     >
       <div className="absolute inset-0 bg-black/45" />
 
@@ -39,7 +44,16 @@ export default function FooterCta({ onBook }: FooterCtaProps) {
         </div>
       </div>
 
-      <p className="absolute inset-x-0 bottom-0 z-10 px-4 pb-3 text-center text-xs sm:px-6">{FOOTER.copyright}</p>
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 px-4 pb-3 text-xs sm:px-6">
+        {/* The prerendered page carries the build year; in a new year before the next deploy, the browser's
+            would differ, and React would otherwise report a hydration mismatch. */}
+        <p suppressHydrationWarning>{FOOTER.copyright}</p>
+        {FOOTER_LINKS.map((link) => (
+          <Link key={link.href} to={localize(link.href)} className="cursor-pointer underline-offset-2 hover:underline">
+            {link.label}
+          </Link>
+        ))}
+      </div>
     </footer>
   )
 }

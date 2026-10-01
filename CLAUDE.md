@@ -12,12 +12,22 @@ Marketing site and online booking for a villa (Villetta Mattat Galilee). Hebrew-
 - `npm run check:live`: read-only check of the real Smoobu / iCal / Resend credentials. Run it after any change
   to `server/smoobu.ts`. `-- --email you@example.com` sends one test email.
 - `npm test` (vitest), `npm run typecheck`, `npm run build` (tsc, client, SSR, prerender), `npm run deploy`.
+- `npm run dev` and `npm run build` first run `scripts/images.mjs` (predev/prebuild), which resizes the
+  photos. The first run on a fresh clone takes about two minutes; after that it only handles new or changed
+  photos.
 
 ## Architecture
 
 - **Frontend:** Vite, React 19, strict TypeScript, Tailwind v4 (tokens in `@theme` in `src/index.css`),
   react-router 7. `scripts/prerender.mjs` writes one static HTML file per page per language, plus sitemap,
-  robots and 404. Adding an entry to `NAV_LINKS` adds a prerendered page automatically.
+  robots and 404. Adding an entry to `NAV_LINKS` (the menu) or `FOOTER_LINKS` (footer only) adds a
+  prerendered page automatically. Also give it a `PAGE_SEO` entry and a `pageCopy` case in `src/seo/meta.ts`.
+- **Photos:** `scripts/images.mjs` writes AVIF and WebP copies (480/960/1600 px) of each photo in
+  `public/assets/` into `public/assets/img/`, plus the manifest `src/generated/images.json`. Both are
+  git-ignored. Show photos with `<Picture sizes=...>` (`src/components/Picture.tsx`), not `<img>`; places
+  that take one URL (a CSS background, a video poster) use `largestWebp()` (`src/lib/images.ts`).
+  `public/assets/` is the only image folder. The prerender step fails without the manifest, and writes
+  `dist/_headers` so browsers cache `/assets/img/*` for a year (each name carries a hash of its original).
 - **i18n:** language comes from the URL (`src/i18n/paths.ts`). Page copy lives in `src/data/*.ts` (Hebrew,
   the source of truth) and `src/data/en/*.ts` (English overlays). UI labels live in `src/i18n/strings.ts`,
   where `en: Strings` is compile-checked against `he`. Components hold no copy: add every string in both
@@ -72,7 +82,14 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
   conditional classes via template literals (no clsx).
 - RTL: use logical properties (`ps-`, `pe-`, `start-`, `text-start`), never left/right. Wrap phone numbers and
   references in `<bdi>` or set `dir`. Explicit `cursor-pointer` on every interactive element. Squared design:
-  no `rounded-*` except circles. Icons from `lucide-react`.
+  no `rounded-*` except circles. Icons from `lucide-react` (brand logos such as WhatsApp from `react-icons`).
+- Accessibility: anything that moves by itself gets a pause button and starts paused under reduced motion
+  (`useAutoplay` + `AutoplayToggle`); dialogs keep focus inside with `useFocusTrap`. The owner wants the
+  pause buttons out of sight: they are invisible (`index.css`) until keyboard focus reaches them, or always
+  shown once the visitor ticks the setting in the accessibility statement (`src/lib/pauseButtons.ts`, saved
+  in localStorage). Don't hide them from the keyboard or screen readers (`display: none`, `visibility`,
+  `aria-hidden`): that would leave no way to stop the motion (WCAG 2.2.2). The accessibility statement
+  (`src/data/legal.ts`) describes all this, so keep it true when changing it.
 - Comments explain why, in plain language. No non-null assertions; narrow the value instead.
 
 ## Secrets
@@ -95,13 +112,25 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%). In Search Console, submit
   `/sitemap.xml` and request indexing of the home page (search results still showed old-site pages in
   September 2026). Set up a Google Business Profile, where the map results for "צימר במתת" come from, and
-  ask guests for Google reviews there.
+  ask guests for Google reviews there. Have a lawyer check the accessibility statement and the privacy
+  policy.
+- **Accessibility and privacy:** the statement is at `/accessibility`, the policy at `/privacy` (copy in
+  `src/data/legal.ts`), both linked from the footer. The floating accessibility button links to the
+  statement. The booking and contact forms each carry a line linking to the policy. The policy names the
+  services that receive guest data (Smoobu, Resend, Cloudflare); update it when that changes. The only thing
+  the site keeps in the browser is the pause-button setting, which the policy mentions. The villa's own
+  accessibility is described only as "partly accessible, call us": the owner gives details by phone.
+- **Analytics:** Cloudflare Web Analytics with automatic setup: Cloudflare adds its script (cookieless, with
+  single-page navigation tracking) to the pages at the edge, so the code has none. Don't add the snippet by
+  hand as well, or it would load twice. Numbers: Cloudflare dashboard > Analytics > Web analytics.
+- **WhatsApp:** a floating button (`WhatsAppButton`) and a column on `/contact`, both from `WHATSAPP_HREF`,
+  which is derived from `PHONE_HREF`.
 - **Domain:** `mattat-galilee.co.il` is served by the Worker (www redirects to it). `VITE_SITE_URL` is set
   in the committed `.env.production`; the build fails if it is missing, rather than shipping example.com.
 - **Redirects:** the build writes `dist/_redirects` (Cloudflare static assets): 301 from each page's
   trailing-slash address to the canonical one without it, plus the press page's pre-redesign Hebrew address
   (`/כתבו-עלינו/`, since outside articles may link to it). No other old addresses are redirected.
-- **Not done yet:** a privacy notice on the booking form; a payment processor for the card deposit.
+- **Not done yet:** a payment processor for the card deposit.
 
 ## Working notes
 

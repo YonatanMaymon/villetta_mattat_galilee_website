@@ -1,5 +1,7 @@
 export const PHONE_DISPLAY = '052-4560554'
 export const PHONE_HREF = 'tel:+972524560554'
+/** A WhatsApp chat with the same number (wa.me takes the international number, digits only). */
+export const WHATSAPP_HREF = `https://wa.me/${PHONE_HREF.replace(/\D/g, '')}`
 export const YOUTUBE_VIDEO_ID = '3tZoOpgGw4Q'
 
 export interface NavLink {
@@ -17,6 +19,12 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'כתבו עלינו', href: '/written-about-us' },
   { label: 'מחירון', href: '/price' },
   { label: 'צור קשר', href: '/contact' },
+]
+
+/** Linked from the footer, not the menu. Prerendered like the menu pages (PAGE_PATHS in src/seo/meta.ts). */
+export const FOOTER_LINKS: NavLink[] = [
+  { label: 'הצהרת נגישות', href: '/accessibility' },
+  { label: 'מדיניות פרטיות', href: '/privacy' },
 ]
 
 export const HERO = {
@@ -83,7 +91,8 @@ export const FOOTER = {
   title: 'לחוויה מושלמת בגליל',
   subtitle: 'זמינים לכל שאלה! לשירותכם!',
   socialLabel: 'חפשו אותנו גם ב',
-  copyright: '© כל הזכויות שמורות, וילטה מתת גליל 2023',
+  // The year of the last build, since the pages are prerendered (see FooterCta).
+  copyright: `© כל הזכויות שמורות, וילטה מתת גליל ${new Date().getFullYear()}`,
 }
 
 export const SOCIALS = {

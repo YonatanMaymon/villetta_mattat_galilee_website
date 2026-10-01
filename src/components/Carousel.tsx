@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import AutoplayToggle from './AutoplayToggle'
+import { useAutoplay } from '../hooks/useAutoplay'
 import { useLanguage } from '../i18n/LanguageContext'
 
 export interface Breakpoint {
@@ -115,11 +117,7 @@ export default function Carousel<T>({
     if (index >= count) jumpTo(0)
   }
 
-  useEffect(() => {
-    if (!intervalMs) return
-    const id = window.setInterval(next, intervalMs)
-    return () => window.clearInterval(id)
-  }, [index, intervalMs, next])
+  const autoplay = useAutoplay(intervalMs, next, index)
 
   useEffect(() => {
     onIndexChange?.(index % count)
@@ -148,8 +146,9 @@ export default function Carousel<T>({
       aria-label={label}
       className="relative mx-auto"
       style={{ '--outset': `${arrowOutset}px` } as CSSProperties}
+      {...autoplay.regionProps}
     >
-      <div className="overflow-hidden">
+      <div className="relative overflow-hidden">
         <div
           className="flex"
           onTransitionEnd={onTransitionEnd}
@@ -162,6 +161,8 @@ export default function Carousel<T>({
           {track.map((item, i) => (
             <div
               key={i}
+              // Slides out of view (and the copies that make the loop) stay out of the Tab order.
+              inert={i < index || i >= index + perView}
               className="shrink-0"
               style={{ width: `calc((100% - ${(perView - 1) * gap}px) / ${perView})` }}
             >
@@ -169,6 +170,13 @@ export default function Carousel<T>({
             </div>
           ))}
         </div>
+        {autoplay.enabled && (
+          <AutoplayToggle
+            playing={autoplay.playing}
+            onToggle={autoplay.toggle}
+            className="absolute bottom-3 end-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white transition hover:bg-black/70"
+          />
+        )}
       </div>
 
       <button

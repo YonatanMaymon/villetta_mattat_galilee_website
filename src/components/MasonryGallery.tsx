@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useState } from 'react'
 import Lightbox from './Lightbox'
+import Picture from './Picture'
 import type { GalleryPhoto } from '../data/gallery'
 import { useLanguage } from '../i18n/LanguageContext'
 
@@ -66,11 +67,12 @@ export default function MasonryGallery({ photos }: MasonryGalleryProps) {
                 aria-label={t.enlargeImageN(index + 1)}
                 className="block cursor-zoom-in overflow-hidden"
               >
-                <img
+                <Picture
                   src={photo.src}
                   alt={GALLERY_ALT}
                   width={photo.width}
                   height={photo.height}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 560px) 50vw, 100vw"
                   loading="lazy"
                   className="h-auto w-full transition-transform duration-500 hover:scale-105"
                 />

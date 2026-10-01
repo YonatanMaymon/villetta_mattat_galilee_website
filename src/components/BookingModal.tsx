@@ -75,6 +75,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     t,
     lang,
     dir,
+    localize,
     data: {
       content: { BOOKING },
     },
@@ -247,6 +248,8 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                     className={inputClass}
                     name="name"
                     type="text"
+                    // The button that led here is gone; without this, focus would drop out of the dialog.
+                    autoFocus
                     autoComplete="name"
                     placeholder={`${t.fullName}*`}
                     aria-label={t.fullName}
@@ -290,6 +293,14 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                     onChange={(e) => setWebsite(e.target.value)}
                     className="absolute -left-[9999px] h-0 w-0 opacity-0"
                   />
+
+                  <p className="text-[13px] leading-5 text-neutral-700">
+                    {t.bookingPrivacy}{' '}
+                    {/* A new tab, so reading it doesn't lose the booking in progress. */}
+                    <a href={localize('/privacy')} target="_blank" rel="noopener" className="cursor-pointer underline">
+                      {t.privacyMore}
+                    </a>
+                  </p>
 
                   <Actions onBack={() => setStep(1)} backLabel={t.back} submitLabel={t.continue} />
                 </form>

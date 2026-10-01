@@ -9,6 +9,9 @@ import { PAGE_PATHS, SITE_URL, alternatesFor, getPageHead, type PageHead } from 
 export { PAGE_PATHS, SITE_URL, alternatesFor, localizePath }
 export type { Lang }
 
+/** Photos with smaller copies; the prerender step refuses to ship a build without them. */
+export { imageCount } from './lib/images'
+
 /** Server entry used by scripts/prerender.mjs: renders one URL to an HTML string. */
 export function render(url: string): string {
   return renderToString(
