@@ -9,6 +9,8 @@ interface HeroShellProps {
   children?: ReactNode
   /** Vertical nudge for the copy block (Tailwind margin utility). */
   contentClassName?: string
+  /** A control pinned over the background, positioned by the caller (the video's pause button). */
+  corner?: ReactNode
 }
 
 /** Full-screen hero: background media, dark gradient, centred copy, scroll cue to #content. */
@@ -18,6 +20,7 @@ export default function HeroShell({
   subtitle,
   children,
   contentClassName = 'mt-24',
+  corner,
 }: HeroShellProps) {
   const { t } = useLanguage()
 
@@ -35,10 +38,11 @@ export default function HeroShell({
       <a
         href="#content"
         aria-label={t.scrollDown}
-        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 animate-bounce"
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 motion-safe:animate-bounce"
       >
         <ArrowDown size={32} strokeWidth={1.25} />
       </a>
+      {corner}
     </section>
   )
 }

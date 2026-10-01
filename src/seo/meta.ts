@@ -11,15 +11,17 @@ const OG_LOCALES: Record<Lang, string> = { he: 'he_IL', en: 'en_US' }
 const NOT_FOUND_TITLES: Record<Lang, string> = { he: 'העמוד לא נמצא', en: 'Page not found' }
 const HOME_IMAGE = '/assets/hero-jacuzzi.jpg'
 
-/** Language-neutral paths of every real page; also what the prerender step generates. */
-export const PAGE_PATHS = DATA.he.content.NAV_LINKS.map((link) => link.href)
+const { NAV_LINKS, FOOTER_LINKS } = DATA.he.content
+
+/** Language-neutral paths of every real page, menu and footer; also what the prerender step generates. */
+export const PAGE_PATHS = [...NAV_LINKS, ...FOOTER_LINKS].map((link) => link.href)
 
 interface PageCopy extends PageSeo {
   image: string
 }
 
 function pageCopy(path: string, lang: Lang): PageCopy | null {
-  const { area, contact, food, gallery, ourStory, press, price, seo, villetta } = DATA[lang]
+  const { area, contact, food, gallery, legal, ourStory, press, price, seo, villetta } = DATA[lang]
   const pages: Record<string, PageSeo> = seo.PAGE_SEO
   if (!Object.hasOwn(pages, path)) return null
   // Title and description are the SEO copy; the picture shown when the link is shared is the page's hero.
@@ -44,6 +46,10 @@ function pageCopy(path: string, lang: Lang): PageCopy | null {
       return page(price.PRICE_HERO.image)
     case '/contact':
       return page(contact.CONTACT_HERO.image)
+    case '/accessibility':
+      return page(legal.ACCESSIBILITY.hero.image)
+    case '/privacy':
+      return page(legal.PRIVACY_POLICY.hero.image)
     default:
       return null
   }

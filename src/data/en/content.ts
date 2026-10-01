@@ -1,7 +1,7 @@
 import { FEATURE_TILES as HE_FEATURE_TILES, type FeatureTile, type NavLink, type Testimonial } from '../content'
 import { translateItems } from './util'
 
-export { PHONE_DISPLAY, PHONE_HREF, YOUTUBE_VIDEO_ID, SOCIALS } from '../content'
+export { PHONE_DISPLAY, PHONE_HREF, WHATSAPP_HREF, YOUTUBE_VIDEO_ID, SOCIALS } from '../content'
 
 export const NAV_LINKS: NavLink[] = [
   { label: 'Home', href: '/' },
@@ -13,6 +13,11 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'Written About Us', href: '/written-about-us' },
   { label: 'Prices', href: '/price' },
   { label: 'Contact', href: '/contact' },
+]
+
+export const FOOTER_LINKS: NavLink[] = [
+  { label: 'Accessibility Statement', href: '/accessibility' },
+  { label: 'Privacy Policy', href: '/privacy' },
 ]
 
 export const HERO = {
@@ -65,7 +70,7 @@ export const FOOTER = {
   title: 'For a perfect experience in the Galilee',
   subtitle: 'Available for any question! At your service!',
   socialLabel: 'Find us also on',
-  copyright: '© All rights reserved, Villetta Mattat Galilee 2023',
+  copyright: `© All rights reserved, Villetta Mattat Galilee ${new Date().getFullYear()}`,
 }
 
 export const BOOKING = {

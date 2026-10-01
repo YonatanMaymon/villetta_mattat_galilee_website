@@ -1,4 +1,5 @@
 import Carousel, { type Breakpoint } from './Carousel'
+import Picture from './Picture'
 import type { SliderImage } from '../data/types'
 
 interface ImageCarouselProps {
@@ -24,9 +25,10 @@ export default function ImageCarousel({ images, intervalMs, label }: ImageCarous
         label={label}
         renderItem={(img) => (
           <div className="border border-neutral-200 bg-white p-[2px]">
-            <img
+            <Picture
               src={img.src}
               alt={img.alt}
+              sizes="(min-width: 640px) 33vw, 100vw"
               loading="lazy"
               draggable={false}
               className="aspect-[10/7] w-full object-cover"

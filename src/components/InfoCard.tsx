@@ -1,3 +1,4 @@
+import Picture from './Picture'
 import type { CardItem } from '../data/types'
 
 interface InfoCardProps {
@@ -10,7 +11,14 @@ export default function InfoCard({ item }: InfoCardProps) {
   return (
     <article className="flex h-full flex-col border border-neutral-200/80 bg-white p-2 shadow-[0_0_0_3px_rgba(255,255,255,0.6)]">
       <div className="relative">
-        <img src={image} alt={title} loading="lazy" className="aspect-[9/5] w-full object-cover" />
+        {/* Cards sit 1, 2 or 4 to a row (CardCarouselSection). */}
+        <Picture
+          src={image}
+          alt={title}
+          sizes="(min-width: 980px) 25vw, (min-width: 768px) 50vw, 100vw"
+          loading="lazy"
+          className="aspect-[9/5] w-full object-cover"
+        />
         {badge && (
           <span className="absolute end-2 top-2 flex h-[66px] w-[66px] items-center justify-center rounded-full bg-brown/95 p-2 text-center text-[13px] font-normal leading-tight text-white">
             {badge}

@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import Picture from './Picture'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface LightboxProps {
@@ -16,6 +18,8 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
   const { t, dir } = useLanguage()
   const count = images.length
   const rtl = dir === 'rtl'
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef, index !== null)
 
   useEffect(() => {
     if (index === null) return
@@ -39,15 +43,18 @@ export default function Lightbox({ images, index, onChange }: LightboxProps) {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label={t.enlargedImage}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-14"
       onClick={() => onChange(null)}
     >
-      <img
+      <Picture
+        key={image.src}
         src={image.src}
         alt={image.alt}
+        sizes="100vw"
         className="max-h-full max-w-full object-contain"
         onClick={(e) => e.stopPropagation()}
       />

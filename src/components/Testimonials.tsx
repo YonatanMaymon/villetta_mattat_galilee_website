@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import AutoplayToggle from './AutoplayToggle'
 import SectionHeading from './SectionHeading'
+import { useAutoplay } from '../hooks/useAutoplay'
 import { useLanguage } from '../i18n/LanguageContext'
 
 const AUTOPLAY_MS = 7000
@@ -18,16 +20,10 @@ export default function Testimonials() {
   } = useLanguage()
   const COUNT = TESTIMONIALS.length
   const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
 
   const next = () => setIndex((i) => (i + 1) % COUNT)
   const prev = () => setIndex((i) => (i - 1 + COUNT) % COUNT)
-
-  useEffect(() => {
-    if (paused) return
-    const id = window.setInterval(() => setIndex((i) => (i + 1) % COUNT), AUTOPLAY_MS)
-    return () => window.clearInterval(id)
-  }, [paused, index, COUNT])
+  const autoplay = useAutoplay(AUTOPLAY_MS, next, index)
 
   // Kept as on the original for Hebrew; English follows the usual left = back, right = forward.
   const startArrow =
@@ -44,8 +40,7 @@ export default function Testimonials() {
       className="bg-paper px-4 py-24"
       aria-roledescription="carousel"
       aria-label={t.testimonials}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      {...autoplay.regionProps}
     >
       <SectionHeading title={t.testimonials} />
 
@@ -74,22 +69,30 @@ export default function Testimonials() {
         </button>
       </div>
 
-      <div dir="ltr" className="mt-12 flex justify-center gap-2" role="tablist" aria-label={t.chooseTestimonial}>
-        {TESTIMONIALS.map((item, i) => (
-          <button
-            key={item.author}
-            type="button"
-            role="tab"
-            aria-selected={i === index}
-            aria-label={t.testimonialN(i + 1)}
-            onClick={() => setIndex(i)}
-            className="cursor-pointer py-2"
-          >
-            <span
-              className={`block h-0.5 transition-all ${i === index ? 'w-10 bg-black' : 'w-5 bg-neutral-300'}`}
-            />
-          </button>
-        ))}
+      <div dir="ltr" className="mt-12 flex items-center justify-center gap-5">
+        <div className="flex gap-2" role="tablist" aria-label={t.chooseTestimonial}>
+          {TESTIMONIALS.map((item, i) => (
+            <button
+              key={item.author}
+              type="button"
+              role="tab"
+              aria-selected={i === index}
+              aria-label={t.testimonialN(i + 1)}
+              onClick={() => setIndex(i)}
+              className="cursor-pointer py-2"
+            >
+              <span
+                className={`block h-0.5 transition-all ${i === index ? 'w-10 bg-black' : 'w-5 bg-neutral-300'}`}
+              />
+            </button>
+          ))}
+        </div>
+        {/* Beside the dots rather than among them: a tablist may hold only tabs. */}
+        <AutoplayToggle
+          playing={autoplay.playing}
+          onToggle={autoplay.toggle}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-black/50 transition hover:bg-black hover:text-white"
+        />
       </div>
     </section>
   )

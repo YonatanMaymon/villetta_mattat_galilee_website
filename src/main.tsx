@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App'
 import { LanguageProvider } from './i18n/LanguageContext'
+import { applyPauseButtons, pauseButtonsShown } from './lib/pauseButtons'
+
+// A visitor who chose to always see the pause buttons gets them on every page, before anything moves.
+applyPauseButtons(pauseButtonsShown())
 
 const container = document.getElementById('root')!
 

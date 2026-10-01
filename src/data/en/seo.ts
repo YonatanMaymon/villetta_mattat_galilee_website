@@ -67,4 +67,16 @@ export const PAGE_SEO = {
       `Phone ${PHONE_DISPLAY}, email ${CONTACT_DETAILS.email.value}, or navigate on Waze to ` +
       `"Villetta Mattat Galilee". We're happy to answer any question.`,
   },
+  '/accessibility': {
+    title: 'Accessibility Statement | Villetta Mattat Galilee',
+    description:
+      'How the Villetta Mattat Galilee website is made accessible, what is not fully accessible yet, ' +
+      'access at the Villetta itself, and whom to contact.',
+  },
+  '/privacy': {
+    title: 'Privacy Policy | Villetta Mattat Galilee',
+    description:
+      'What the booking and contact forms collect, why, who receives it, and how to see, correct or ' +
+      'delete your details.',
+  },
 } satisfies Record<string, PageSeo>

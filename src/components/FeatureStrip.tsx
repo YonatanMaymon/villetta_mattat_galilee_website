@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Picture from './Picture'
 import { useLanguage } from '../i18n/LanguageContext'
 
 export default function FeatureStrip() {
@@ -18,9 +19,10 @@ export default function FeatureStrip() {
           to={localize(tile.href)}
           className="group relative block aspect-square overflow-hidden bg-neutral-200"
         >
-          <img
+          <Picture
             src={tile.image}
             alt={tile.title}
+            sizes="(min-width: 1024px) 25vw, 50vw"
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />

@@ -1,4 +1,4 @@
-import { SOCIALS } from './content'
+import { SOCIALS, WHATSAPP_HREF } from './content'
 
 export const CONTACT_HERO = {
   image: '/assets/gallery-al6-4126.jpg',
@@ -8,6 +8,7 @@ export const CONTACT_HERO = {
 
 export const CONTACT_DETAILS = {
   phone: { label: 'טלפון', value: '052-4560554', href: 'tel:+972524560554', note: 'שרון מימון' },
+  whatsapp: { label: 'וואטסאפ', value: 'שלחו לנו הודעה', href: WHATSAPP_HREF },
   email: {
     label: 'אימייל',
     value: 'villetta@mattat-galilee.co.il',

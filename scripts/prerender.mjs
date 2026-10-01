@@ -1,5 +1,6 @@
 // Turns the client build into static HTML: one file per page and language, with the rendered
-// content and SEO tags already inside. Also writes sitemap.xml, robots.txt and 404.html.
+// content and SEO tags already inside. Also writes sitemap.xml, robots.txt, 404.html, and the
+// Cloudflare _redirects and _headers files.
 // Runs after `vite build` and `vite build --ssr` (see the "build" script in package.json).
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -8,13 +9,17 @@ import { pathToFileURL } from 'node:url'
 const DIST = 'dist'
 const SSR_ENTRY = path.resolve('dist-ssr', 'entry-server.js')
 
-const { render, getHead, PAGE_PATHS, SITE_URL, alternatesFor, localizePath } = await import(
+const { render, getHead, PAGE_PATHS, SITE_URL, alternatesFor, localizePath, imageCount } = await import(
   pathToFileURL(SSR_ENTRY).href
 )
 
 // Without it every canonical, hreflang and sitemap URL would tell Google the site is example.com.
 if (SITE_URL === 'https://example.com') {
   throw new Error('VITE_SITE_URL is not set (see .env.production)')
+}
+// Without the manifest every page would quietly fall back to the full-size photos.
+if (imageCount === 0) {
+  throw new Error('No resized photos: run `node scripts/images.mjs` (the prebuild script does)')
 }
 
 const template = await readFile(path.join(DIST, 'index.html'), 'utf8')
@@ -91,3 +96,7 @@ await write(
   '_redirects',
   [...slashRedirects, ...movedPages].map(([from, to]) => `${from} ${to} 301`).join('\n') + '\n',
 )
+
+// The resized photos (scripts/images.mjs) never change under the same name, since each name carries a hash
+// of its original, so browsers may keep them for a year without asking again.
+await write('_headers', '/assets/img/*\n  Cache-Control: public, max-age=31536000, immutable\n')

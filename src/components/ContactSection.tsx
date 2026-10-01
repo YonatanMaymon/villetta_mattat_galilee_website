@@ -1,5 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Mail, MapPin, Smartphone } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 import SectionHeading from './SectionHeading'
 import SocialLinks from './SocialLinks'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -7,7 +9,7 @@ import { ApiRequestError, submitContact } from '../lib/api'
 
 function Detail({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col items-center px-6 py-6 text-center sm:py-0">
+    <div className="flex flex-1 flex-col items-center px-6 py-6 text-center lg:py-0">
       <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-white text-brown">
         {icon}
       </span>
@@ -24,6 +26,7 @@ export default function ContactSection() {
   const {
     t,
     dir,
+    localize,
     data: {
       contact: { CONTACT_DETAILS, CONTACT_FORM },
     },
@@ -32,7 +35,7 @@ export default function ContactSection() {
   const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<'rateLimited' | 'sendFailed' | null>(null)
-  const { phone, email, address } = CONTACT_DETAILS
+  const { phone, whatsapp, email, address } = CONTACT_DETAILS
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -59,12 +62,18 @@ export default function ContactSection() {
 
   return (
     <section id="content" className="scroll-mt-20 bg-linen-texture px-4 py-16 sm:py-[100px]">
-      <div className="mx-auto flex max-w-[940px] flex-col divide-y divide-brown/80 sm:flex-row sm:divide-x sm:divide-y-0">
+      {/* Side by side only from lg: on tablets, four columns leave the email address too little room. */}
+      <div className="mx-auto flex max-w-[1100px] flex-col divide-y divide-brown/80 lg:flex-row lg:divide-x lg:divide-y-0">
         <Detail icon={<Smartphone size={26} strokeWidth={1.25} />} label={phone.label}>
           <a href={phone.href} dir="ltr">
             {phone.value}
           </a>
           <p className="text-[13px]">{phone.note}</p>
+        </Detail>
+        <Detail icon={<FaWhatsapp size={26} />} label={whatsapp.label}>
+          <a href={whatsapp.href} target="_blank" rel="noopener noreferrer">
+            {whatsapp.value}
+          </a>
         </Detail>
         <Detail icon={<Mail size={26} strokeWidth={1.25} />} label={email.label}>
           <a href={email.href}>{email.value}</a>
@@ -112,6 +121,12 @@ export default function ContactSection() {
               aria-hidden
               className="absolute -left-[9999px] h-0 w-0 opacity-0"
             />
+            <p className="mt-4 text-center text-[13px] leading-5 text-neutral-700">
+              {t.contactPrivacy}{' '}
+              <Link to={localize('/privacy')} className="cursor-pointer underline">
+                {t.privacyMore}
+              </Link>
+            </p>
             {error && (
               <p role="alert" className="mt-2 text-center text-red-700">
                 {t[error]}
