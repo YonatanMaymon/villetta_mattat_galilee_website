@@ -128,8 +128,10 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Domain:** `mattat-galilee.co.il` is served by the Worker (www redirects to it). `VITE_SITE_URL` is set
   in the committed `.env.production`; the build fails if it is missing, rather than shipping example.com.
 - **Redirects:** the build writes `dist/_redirects` (Cloudflare static assets): 301 from each page's
-  trailing-slash address to the canonical one without it, plus the press page's pre-redesign Hebrew address
-  (`/כתבו-עלינו/`, since outside articles may link to it). No other old addresses are redirected.
+  trailing-slash address to the canonical one without it, plus two pre-redesign addresses Google still knows:
+  the press page's Hebrew address (`/כתבו-עלינו/`, since outside articles may link to it) and the old
+  WordPress menu PDF. Cloudflare matches the percent-encoded path, so non-ASCII sources go through
+  `encodeURI`. Other old WordPress addresses (`/hello-world/`, `/author/admin/`) answer 404 on purpose.
 - **Not done yet:** a payment processor for the card deposit.
 
 ## Working notes
