@@ -71,7 +71,7 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - `POST /booking/checkApartmentAvailability` needs `SMOOBU_CUSTOMER_ID` and returns `prices: []` when the
   apartment has no nightly rates set.
 - The `/price` table (`src/data/price.ts`) is typed in by hand and must match Smoobu's rates: 4,200 weekday,
-  4,500 Friday/Saturday, 25% off 2 nights, 35% off 3+. After a rate change, compare with live
+  5,000 Friday/Saturday, 25% off 2 nights, 35% off 3+. After a rate change, compare with live
   `GET /api/quote` answers. Smoobu's quote is what guests are charged.
 - To debug: write a throwaway script in the scratchpad that prints only status codes and field names.
 
@@ -109,7 +109,7 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Email:** Resend, sending from the verified subdomain `updates.mattat-galilee.co.il`. Setting
   `RESEND_API_KEY`, `MAIL_FROM` and `NOTIFY_TO_EMAIL` turns email on in both the Node server and the Worker;
   without all three, mail is only logged via `server/logMail.ts` (on Cloudflare: `wrangler tail`).
-- **Owner tasks:** set the Smoobu weekend rate to 4,500 (it charges 4,536, +8%). In Search Console, submit
+- **Owner tasks:** set the Smoobu weekend rate to 5,000, to match `/price`. In Search Console, submit
   `/sitemap.xml` and request indexing of the home page (search results still showed old-site pages in
   September 2026). Set up a Google Business Profile, where the map results for "צימר במתת" come from, and
   ask guests for Google reviews there. Have a lawyer check the accessibility statement and the privacy

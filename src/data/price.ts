@@ -25,7 +25,7 @@ export const PRICE_NIGHTS_TITLE: string = 'מחיר ללילה'
 
 export const PRICE_NIGHTS: NightPrice[] = [
   { label: 'אמצע השבוע (א׳–ה׳)', price: 4200 },
-  { label: 'סוף השבוע (שישי ושבת)', price: 4500 },
+  { label: 'סוף השבוע (שישי ושבת)', price: 5000 },
 ]
 
 export const PRICE_DISCOUNTS_TITLE: string = 'הנחה לשהייה ארוכה'
