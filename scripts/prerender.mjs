@@ -84,13 +84,17 @@ await write('robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitem
 // a permanent 301 tells search engines that `/villetta/` and `/villetta` are one page, the one without.
 const slashRedirects = urls.filter((url) => url !== '/').map((url) => [`${url}/`, url])
 
-// The press page's address before the redesign. Articles about the villa may still link to it; the
-// redirect keeps those visitors, and the credit Google gives for the links. Can go once Google has
-// long since dropped the old address (well into 2027).
+// Addresses from before the redesign that Google still knows. The press page: articles about the villa
+// may still link to it; the redirect keeps those visitors, and the credit Google gives for the links.
+// The menu PDF: Google had the old WordPress copy indexed. Both can go once Google has long since
+// dropped the old addresses (well into 2027).
+// Cloudflare compares the percent-encoded path (what browsers and Googlebot send), so a Hebrew source
+// written as plain text never matches; encodeURI turns it into that form.
 const movedPages = [
   ['/כתבו-עלינו/', '/written-about-us'],
   ['/כתבו-עלינו', '/written-about-us'],
-]
+  ['/wp-content/uploads/2025/10/menu.pdf', '/assets/moniv-hadia-menu.pdf'],
+].map(([from, to]) => [encodeURI(from), to])
 
 await write(
   '_redirects',
