@@ -30,4 +30,7 @@ export interface Env {
    * bookings are accepted without the bot check (fine locally, not for a public site).
    */
   TURNSTILE_SECRET?: string
+
+  /** The villa's hapisga iCal export, republished at /hapisga.ics for Smoobu (Worker only). Holds a token. */
+  HAPISGA_ICAL_URL?: string
 }
