@@ -21,8 +21,8 @@ export const FOOTER_LINKS: NavLink[] = [
 ]
 
 export const HERO = {
-  title: 'Such a magical and special place!',
-  subtitle: 'A slice of heavenly paradise where everything exists and nothing is missing, in exquisite precision and harmony',
+  title: 'Refined luxury. Endless nature. Just the two of you.',
+  subtitle: 'Villetta Mattat Galilee: a secluded luxury retreat for couples, above and within the Galilee woodland, all the way to the sea',
 }
 
 export const STORY = {
