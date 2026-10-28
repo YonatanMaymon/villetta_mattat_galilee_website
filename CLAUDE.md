@@ -39,7 +39,8 @@ Marketing site and online booking for a villa (Villetta Mattat Galilee). Hebrew-
   the site's own testimonials as ratings: Google treats reviews a business publishes about itself as spam.
 - **Booking API:** `server/` (Hono, runtime-agnostic) with two entries: `server/index.ts` (Node, local) and
   `worker/index.ts` (Cloudflare Worker: `/api/*` here, everything else served from `dist/` as static assets).
-  Routes: `GET /api/availability`, `GET /api/quote`, `POST /api/booking`, `POST /api/contact`. `shared/` holds
+  Routes: `GET /api/availability`, `GET /api/quote`, `POST /api/booking`, `POST /api/contact`,
+  `GET /api/payment/return`, `POST /api/payment/webhook`. `shared/` holds
   code used by both browser and server.
 - **No database.** Smoobu is the only source of truth. Availability is cached 10 minutes in memory, cleared
   after a booking; `POST /api/booking` re-checks uncached.
@@ -48,11 +49,18 @@ Marketing site and online booking for a villa (Villetta Mattat Galilee). Hebrew-
 
 ## Booking flow (`src/components/BookingModal.tsx`)
 
-Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> confirm.
+Steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> confirm -> card (only when Cardcom
+is configured: `takesCard` in `/api/availability`).
 
-- **Step 3 is review only. No card capture, and no card fields.** There is no payment processor. Do not add
-  card inputs that do not go to a processor's hosted iframe. The intended path is Cardcom `CreateTokenOnly`;
-  the earlier working Cardcom code is at git tag `prior-booking`.
+- **No card fields on the site.** The card step is Cardcom's hosted Low Profile page in an iframe
+  (`server/cardcom.ts`, API v11): `CreateTokenOnly` with a J2 check, so the card is verified and saved as a
+  token, and nothing is charged or held. The owner charges the token from the Cardcom dashboard.
+- Order: confirm creates the Smoobu reservation, then the Cardcom page. A guest who leaves without a card
+  still holds the dates; the owner's email says a separate "card saved" email follows. If Cardcom fails, the
+  booking stands and the email says to take the card by phone.
+- The booking travels through Cardcom in `ReturnValue` (`ref arrival departure`). The webhook trusts only the
+  `LowProfileId` in its body and reads the outcome back with `GetLpResult` before emailing the owner. The
+  iframe ends on `/api/payment/return`, which only `postMessage`s ok/failed to the dialog (same origin).
 - The reservation is created in Smoobu on confirm, flagged in its `notice` (`PENDING_NOTICE`, because the
   API has no "unconfirmed" field) with `priceStatus: 0`. The flag only labels it; nothing releases it.
 - The price is Smoobu's quote, decided server-side, never taken from the browser. Totals can be fractional:
@@ -117,7 +125,7 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
 - **Accessibility and privacy:** the statement is at `/accessibility`, the policy at `/privacy` (copy in
   `src/data/legal.ts`), both linked from the footer. The floating accessibility button links to the
   statement. The booking and contact forms each carry a line linking to the policy. The policy names the
-  services that receive guest data (Smoobu, Resend, Cloudflare); update it when that changes. The only thing
+  services that receive guest data (Smoobu, Resend, Cardcom, Cloudflare); update it when that changes. The only thing
   the site keeps in the browser is the pause-button setting, which the policy mentions. The villa's own
   accessibility is described only as "partly accessible, call us": the owner gives details by phone.
 - **Analytics:** Cloudflare Web Analytics with automatic setup: Cloudflare adds its script (cookieless, with
@@ -132,7 +140,9 @@ Three steps with `StepIndicator`: dates (calendar, lazy-loaded) -> details -> co
   the press page's Hebrew address (`/כתבו-עלינו/`, since outside articles may link to it) and the old
   WordPress menu PDF. Cloudflare matches the percent-encoded path, so non-ASCII sources go through
   `encodeURI`. Other old WordPress addresses (`/hello-world/`, `/author/admin/`) answer 404 on purpose.
-- **Not done yet:** a payment processor for the card deposit.
+- **Card deposit:** Cardcom (see the booking flow). Needs `CARDCOM_TERMINAL_NUMBER` (wrangler `[vars]`) and
+  the `CARDCOM_API_NAME` secret; the webhook only reaches a public address, not localhost.
+- **Not done yet:** recording the card in the Smoobu reservation (today only the owner's email says so).
 
 ## Working notes
 

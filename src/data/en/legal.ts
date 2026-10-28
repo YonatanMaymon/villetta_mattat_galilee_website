@@ -85,7 +85,7 @@ export const PRIVACY_POLICY: LegalPage = {
     title: 'Privacy Policy',
     subtitle: 'What happens to the details you leave with us',
   },
-  updated: '1 October 2026',
+  updated: '20 October 2026',
   sections: [
     {
       title: 'In short',
@@ -100,6 +100,8 @@ export const PRIVACY_POLICY: LegalPage = {
       paragraphs: [],
       items: [
         'Booking requests: full name, phone, email and the dates of the stay.',
+        "A credit card for the deposit, at the end of a booking: typed straight into Cardcom's secure " +
+          "form, never passing through the site. We see only the cardholder's name and the expiry date.",
         'The contact form: full name, phone, email (optional) and your message.',
         'Aggregate browsing data: which pages were viewed, from what kind of device and from which ' +
           'country. It is collected without cookies and without identifying you.',
@@ -123,6 +125,8 @@ export const PRIVACY_POLICY: LegalPage = {
         'Smoobu, our booking system: keeps the booking request.',
         'Resend, an email service: sends us your request or message, and sends you the confirmation ' +
           'that we received your request.',
+        'Cardcom, an Israeli card processor: checks the credit card and keeps it for the deposit, so we ' +
+          'can charge it only for damage or a late cancellation.',
         'Cloudflare: hosts the site, runs the security check on the forms (Turnstile) and measures ' +
           'aggregate browsing (Web Analytics).',
       ],

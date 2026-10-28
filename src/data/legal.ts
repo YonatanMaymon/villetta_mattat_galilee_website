@@ -94,7 +94,8 @@ export const ACCESSIBILITY: LegalPage = {
 /**
  * What the forms collect and where it goes, as the Privacy Protection Law asks for where personal details
  * are collected. The booking and contact forms link here. Keep the list of services in step with the code:
- * Smoobu (server/smoobu.ts), Resend (server/mail.ts), Cloudflare (hosting, Turnstile, Web Analytics).
+ * Smoobu (server/smoobu.ts), Resend (server/mail.ts), Cardcom (server/cardcom.ts), Cloudflare (hosting,
+ * Turnstile, Web Analytics).
  */
 export const PRIVACY_POLICY: LegalPage = {
   hero: {
@@ -102,7 +103,7 @@ export const PRIVACY_POLICY: LegalPage = {
     title: 'מדיניות פרטיות',
     subtitle: 'מה קורה עם הפרטים שאתם משאירים אצלנו',
   },
-  updated: '1 באוקטובר 2026',
+  updated: '20 באוקטובר 2026',
   sections: [
     {
       title: 'בקצרה',
@@ -117,6 +118,8 @@ export const PRIVACY_POLICY: LegalPage = {
       paragraphs: [],
       items: [
         'בקשת הזמנה: שם מלא, טלפון, אימייל ותאריכי השהייה.',
+        'כרטיס אשראי לפיקדון, בסוף ההזמנה: מוזן ישירות בטופס המאובטח של Cardcom ואינו עובר דרך האתר. אנחנו ' +
+          'רואים רק את שם בעל הכרטיס ואת תוקפו.',
         'טופס יצירת הקשר: שם מלא, טלפון, אימייל (לא חובה) וההודעה שכתבתם.',
         'נתוני גלישה מצטברים: אילו עמודים נצפו, מאיזה סוג מכשיר ומאיזו מדינה. הם נאספים בלי עוגיות ובלי ' +
           'לזהות אתכם אישית.',
@@ -137,6 +140,8 @@ export const PRIVACY_POLICY: LegalPage = {
       items: [
         'Smoobu, מערכת ניהול ההזמנות שלנו: שומרת את בקשת ההזמנה.',
         'Resend, שירות שליחת אימיילים: שולח אלינו את הבקשה או ההודעה, ואליכם את האישור שקיבלנו את הבקשה.',
+        'Cardcom, חברת סליקה ישראלית: בודקת את כרטיס האשראי ושומרת אותו לפיקדון, כך שנוכל לחייב אותו רק ' +
+          'במקרה של נזק או ביטול מאוחר.',
         'Cloudflare: מארחת את האתר, מפעילה את בדיקת האבטחה בטפסים (Turnstile) ומודדת את הגלישה המצטברת ' +
           '(Web Analytics).',
       ],

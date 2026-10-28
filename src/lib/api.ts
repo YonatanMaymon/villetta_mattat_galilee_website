@@ -52,7 +52,10 @@ export const fetchAvailability = (options: { signal?: AbortSignal } = {}) =>
 export const fetchQuote = (arrival: string, departure: string, signal?: AbortSignal) =>
   request<QuoteResponse>(`/api/quote?arrival=${arrival}&departure=${departure}`, { signal })
 
-/** Creates the reservation in Smoobu, flagged for the owner to confirm. Nothing is charged. */
+/**
+ * Creates the reservation in Smoobu, flagged for the owner to confirm. Nothing is charged. When Cardcom is
+ * set up, the answer carries the card page that follows.
+ */
 export const submitBooking = (body: BookingRequest) => request<BookingResponse>('/api/booking', jsonPost(body))
 
 export const submitContact = (body: ContactRequest) => request<{ ok: true }>('/api/contact', jsonPost(body))

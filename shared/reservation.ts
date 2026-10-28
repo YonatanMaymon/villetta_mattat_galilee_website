@@ -50,6 +50,8 @@ export interface AvailabilityResponse {
   updatedAt: string
   /** False while Smoobu's API is not configured: the calendar is read-only and nothing can be booked. */
   canBook: boolean
+  /** True when a booking ends on Cardcom's card page (a fourth step in the dialog). */
+  takesCard: boolean
 }
 
 export const SUPPORTED_CURRENCY = 'ILS'
@@ -67,6 +69,11 @@ export interface BookingResponse {
   nights: number
   amount: number
   currency: string
+  /**
+   * Cardcom's one-time card page for this booking, shown in an iframe. Absent when Cardcom is not set up,
+   * or could not be reached: the dates are held anyway and the owner takes the card by phone.
+   */
+  cardUrl?: string
 }
 
 export type ApiErrorCode =

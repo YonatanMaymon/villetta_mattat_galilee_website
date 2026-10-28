@@ -29,3 +29,5 @@ id = "b856563cef7540bbb7e4cd0d6e4d96f3"
 [vars]
 SMOOBU_APARTMENT_ID = "3514936"
 SMOOBU_CUSTOMER_ID = "1892906"
+# The Cardcom terminal (not a secret). Its API name is a secret: npx wrangler secret put CARDCOM_API_NAME
+CARDCOM_TERMINAL_NUMBER = "199960"
