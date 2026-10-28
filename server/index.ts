@@ -17,6 +17,7 @@ const port = Number(process.env.PORT ?? 8787)
 const hasSmoobuApi = Boolean(env.SMOOBU_API_KEY && env.SMOOBU_API_SECRET && env.SMOOBU_APARTMENT_ID)
 const hasCalendar = hasSmoobuApi || Boolean(env.SMOOBU_ICAL_URL)
 const hasMail = Boolean(env.RESEND_API_KEY && env.NOTIFY_TO_EMAIL && env.MAIL_FROM)
+const hasCardcom = Boolean(env.CARDCOM_TERMINAL_NUMBER && env.CARDCOM_API_NAME)
 
 const deps: AppDeps = {}
 
@@ -39,4 +40,5 @@ serve({ fetch: app.fetch, port }, (info) => {
   console.log(`  calendar: ${calendar}`)
   console.log(`  bookings: ${hasSmoobuApi ? 'written to Smoobu' : deps.pms ? 'demo only, nothing leaves this process' : 'OFF (needs the Smoobu API)'}`)
   console.log(`  email:    ${hasMail ? 'Resend' : 'printed to this console'}`)
+  console.log(`  card:     ${hasCardcom ? 'Cardcom card page after booking' : 'OFF (no card step)'}`)
 })

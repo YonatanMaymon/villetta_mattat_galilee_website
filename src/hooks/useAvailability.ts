@@ -4,7 +4,7 @@ import { fetchAvailability } from '../lib/api'
 type Availability =
   | { status: 'loading' }
   | { status: 'error' }
-  | { status: 'ready'; busy: ReadonlySet<string>; canBook: boolean }
+  | { status: 'ready'; busy: ReadonlySet<string>; canBook: boolean; takesCard: boolean }
 
 /** Loads the booked nights each time `active` turns true (the booking modal opens). */
 export function useAvailability(active: boolean) {
@@ -16,7 +16,9 @@ export function useAvailability(active: boolean) {
     const controller = new AbortController()
     setState({ status: 'loading' })
     fetchAvailability({ signal: controller.signal })
-      .then((data) => setState({ status: 'ready', busy: new Set(data.busyNights), canBook: data.canBook }))
+      .then((data) =>
+        setState({ status: 'ready', busy: new Set(data.busyNights), canBook: data.canBook, takesCard: data.takesCard }),
+      )
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) setState({ status: 'error' })
       })

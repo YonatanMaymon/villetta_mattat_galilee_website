@@ -1,6 +1,7 @@
 import { nightsBetween } from '../shared/dates'
 import { formatShekels } from '../shared/money'
 import type { BookingRequest, ContactRequest, Lang } from '../shared/reservation'
+import type { CardResult } from './cardcom'
 import type { OutgoingMail } from './mail'
 
 // Owner emails are in Hebrew whatever language the guest used. The guest's own copy follows their language.
@@ -62,17 +63,27 @@ function guestRows(request: { name: string; phone: string; email?: string; lang:
   return rows
 }
 
+/** `pending`: the guest was shown Cardcom's card page. `unavailable`: Cardcom failed, so no card page. */
+export type CardStatus = 'pending' | 'unavailable'
+
 export interface BookingMailInput {
   request: BookingRequest
   ref: string
   amount: number
+  /** Absent when Cardcom is not set up. */
+  card?: CardStatus
+}
+
+const CARD_ROW: Record<CardStatus, string> = {
+  pending: 'האורח הופנה לטופס הכרטיס של Cardcom. כשהכרטיס יישמר יגיע מייל נפרד; בלי מייל כזה, לא נשמר כרטיס.',
+  unavailable: 'טופס הכרטיס של Cardcom לא נפתח (תקלה). יש לקבל את פרטי הכרטיס טלפונית.',
 }
 
 /**
  * To the owner. The reservation is already in Smoobu and the dates are blocked, so this is a prompt to
  * phone the guest and confirm, not a request to enter anything by hand.
  */
-export function ownerBookingMail({ request, ref, amount }: BookingMailInput): OutgoingMail {
+export function ownerBookingMail({ request, ref, amount, card }: BookingMailInput): OutgoingMail {
   const nights = nightsBetween(request.arrival, request.departure)
   const rows: Row[] = [
     ...guestRows(request),
@@ -82,6 +93,7 @@ export function ownerBookingMail({ request, ref, amount }: BookingMailInput): Ou
     { label: 'מחיר', value: shekels(amount) },
     { label: 'מספר בקשה', value: ref },
   ]
+  if (card) rows.push({ label: 'כרטיס אשראי', value: CARD_ROW[card] })
 
   return {
     subject: oneLine(`בקשת הזמנה חדשה: ${request.name}, ${request.arrival} עד ${request.departure}`),
@@ -122,9 +134,29 @@ export function guestBookingMail({ request, ref, amount }: BookingMailInput): Ou
       he ? 'קיבלנו את בקשת ההזמנה' : 'We received your booking request',
       rows,
       he
-        ? 'התאריכים שמורים עבורכם ונחזור אליכם טלפונית לאישור סופי. לא בוצע חיוב. כרטיס אשראי יתבקש לפני ההגעה כפיקדון לביטחון בלבד, ולא יחויב אלא במקרה של נזק.'
-        : 'Your dates are held and we will call you to confirm. Nothing has been charged. A credit card will be requested before arrival as a security deposit only, and is not charged unless there is damage.',
+        ? 'התאריכים שמורים עבורכם ונחזור אליכם טלפונית לאישור סופי. לא בוצע חיוב. כרטיס האשראי משמש כפיקדון לביטחון בלבד, ולא יחויב אלא במקרה של נזק או ביטול מאוחר לפי מדיניות הביטול.'
+        : 'Your dates are held and we will call you to confirm. Nothing has been charged. The credit card is a security deposit only, and is not charged unless there is damage or a late cancellation under the cancellation policy.',
       he ? 'rtl' : 'ltr',
+    ),
+  }
+}
+
+/** To the owner, from the Cardcom webhook: a card token is now saved for the booking. */
+export function cardSavedMail(result: Extract<CardResult, { saved: true }>): OutgoingMail {
+  const { booking, cardOwner, expiry } = result
+  const rows: Row[] = [
+    { label: 'מספר בקשה', value: booking.ref },
+    { label: 'הגעה', value: formatDate(booking.arrival) },
+    { label: 'עזיבה', value: formatDate(booking.departure) },
+    { label: 'בעל הכרטיס', value: cardOwner || '-' },
+    { label: 'תוקף', value: expiry },
+  ]
+  return {
+    subject: oneLine(`כרטיס אשראי נשמר: בקשה ${booking.ref}, ${booking.arrival}`),
+    ...render(
+      'כרטיס אשראי נשמר להזמנה',
+      rows,
+      'הכרטיס אומת ונשמר ב-Cardcom כטוקן. לא בוצע חיוב. אפשר לחייב אותו מממשק Cardcom, לפי מספר הבקשה.',
     ),
   }
 }

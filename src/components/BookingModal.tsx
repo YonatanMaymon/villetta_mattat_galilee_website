@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type FormEvent, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import Modal from './Modal'
 import StepIndicator from './StepIndicator'
 import Turnstile, { turnstileEnabled } from './Turnstile'
@@ -18,7 +18,6 @@ interface BookingModalProps {
   onClose: () => void
 }
 
-const TOTAL_STEPS = 3
 
 const inputClass =
   'w-full border border-neutral-300 bg-white px-4 py-3 text-base outline-none focus:border-black'
@@ -27,7 +26,7 @@ const primaryButtonClass =
 const backButtonClass =
   'cursor-pointer border border-black px-6 py-3 transition hover:bg-black hover:text-white'
 
-type Step = 1 | 2 | 3
+type Step = 1 | 2 | 3 | 4
 type FormError = 'datesTaken' | 'rateLimited' | 'sendFailed' | 'calendarError' | 'bookingUnavailable' | 'botCheckFailed'
 
 interface Guest {
@@ -91,10 +90,14 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [error, setError] = useState<FormError | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmedRef, setConfirmedRef] = useState<string | null>(null)
+  // Step 4: the reservation exists and Cardcom's card page is showing.
+  const [card, setCard] = useState<{ ref: string; url: string } | null>(null)
+  const [cardFailed, setCardFailed] = useState(false)
 
   const availability = useAvailability(open)
   const ready = availability.status === 'ready'
   const canBook = ready && availability.canBook
+  const takesCard = ready && availability.takesCard
   const quote = useQuote(selection.arrival, selection.departure, open && canBook)
 
   // A complete stay: both ends chosen. Narrowing it here keeps the rest of the component free of checks.
@@ -115,7 +118,23 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     setError(null)
     setSubmitting(false)
     setConfirmedRef(null)
+    setCard(null)
+    setCardFailed(false)
   }
+
+  // Cardcom's iframe ends on our /api/payment/return page, which reports back here. The owner learns of the
+  // card from Cardcom itself (the webhook); this only moves the guest on.
+  useEffect(() => {
+    if (!card) return
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { source?: unknown; result?: unknown } | null
+      if (event.origin !== window.location.origin || data?.source !== 'cardcom') return
+      setCardFailed(data.result !== 'ok')
+      setConfirmedRef(card.ref)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [card])
 
   const goToDates = () => {
     setStep(1)
@@ -139,7 +158,12 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         website,
         turnstileToken: turnstileToken ?? undefined,
       })
-      setConfirmedRef(booking.ref)
+      if (booking.cardUrl) {
+        setCard({ ref: booking.ref, url: booking.cardUrl })
+        setStep(4)
+      } else {
+        setConfirmedRef(booking.ref)
+      }
     } catch (caught) {
       const code = errorFor(caught)
       setError(code)
@@ -163,13 +187,14 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         <div className="py-8 text-center">
           <p className="text-lg">{t.bookingReceived}</p>
           <p className="mt-4 text-[15px] leading-6 text-neutral-700">{t.awaitingConfirmation}</p>
+          {cardFailed && <p className="mt-4 text-[15px] leading-6 text-red-700">{t.cardNotSaved}</p>}
           <p className="mt-6 text-[15px]">
             {t.bookingRef}: <bdi className="font-medium">{confirmedRef}</bdi>
           </p>
         </div>
       ) : (
         <>
-          <StepIndicator total={TOTAL_STEPS} current={step} />
+          <StepIndicator total={takesCard ? 4 : 3} current={step} />
 
           {availability.status === 'error' ? (
             <CalendarDown onRetry={availability.reload} />
@@ -321,7 +346,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
 
                   <p className="text-[13px] leading-5 text-neutral-700">{BOOKING.terms}</p>
                   <p className="border-s-2 border-brown ps-3 text-[13px] leading-5 text-neutral-800">
-                    {t.securityDepositNote}
+                    {takesCard ? t.cardDepositNote : t.securityDepositNote}
                   </p>
 
                   {/* Renders nothing when Turnstile is not configured; the API skips the check to match. */}
@@ -330,11 +355,25 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                   <Actions
                     onBack={() => setStep(2)}
                     backLabel={t.back}
-                    submitLabel={submitting ? t.sending : t.confirmBooking}
+                    submitLabel={submitting ? t.sending : takesCard ? t.continueToCard : t.confirmBooking}
                     // Wait for the bot check, or the booking would be refused for a missing token.
                     disabled={submitting || (turnstileEnabled && !turnstileToken)}
                   />
                 </form>
+              )}
+
+              {/* The reservation is already made here, so there is no way back: only forward, or close. */}
+              {step === 4 && card && (
+                <section>
+                  <p className="mb-3 text-[15px] leading-6 text-neutral-700">{t.cardStepNote}</p>
+                  {/* Cardcom's own page: the card number never passes through this site. */}
+                  <iframe
+                    src={card.url}
+                    title={t.cardFrameTitle}
+                    allow="payment"
+                    className="block h-[40rem] w-full border border-neutral-300 bg-white"
+                  />
+                </section>
               )}
 
               {error && (

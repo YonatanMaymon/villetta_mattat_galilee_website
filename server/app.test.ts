@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from './app'
+import { PaymentUnavailableError, type CardPageRequest, type CardResult, type CardVault } from './cardcom'
 import type { Env } from './env'
 import { createFakePms } from './fakes'
 import type { OutgoingMail } from './mail'
@@ -17,11 +18,12 @@ const GUEST = {
 }
 
 /** A booking API backed by an in-memory Smoobu, with the sent mail captured rather than delivered. */
-function harness(options: { blocked?: string[]; env?: Env } = {}) {
+function harness(options: { blocked?: string[]; env?: Env; cards?: CardVault } = {}) {
   const pms = createFakePms({ blocked: options.blocked, nightlyPrice: () => 2200 })
   const sent: OutgoingMail[] = []
   const { app } = createApp(options.env ?? {}, {
     pms,
+    cards: options.cards,
     today: () => TODAY,
     sendMail: async (mail) => {
       sent.push(mail)
@@ -244,6 +246,104 @@ describe('POST /api/contact', () => {
     const response = await post('/api/contact', { ...GUEST, message: 'buy pills', website: 'x' })
     expect(response.status).toBe(200)
     expect(sent).toHaveLength(0)
+  })
+})
+
+/** A Cardcom stand-in that records the card pages asked for and answers lookups from `results`. */
+function fakeCards() {
+  const pages: CardPageRequest[] = []
+  const results = new Map<string, CardResult>()
+  const state = { createDown: false, readDown: false }
+  const cards: CardVault = {
+    async createCardPage(request) {
+      if (state.createDown) throw new PaymentUnavailableError('fake Cardcom is down')
+      pages.push(request)
+      return { lowProfileId: `lp-${pages.length}`, url: `https://secure.cardcom.solutions/lp/${pages.length}` }
+    },
+    async getResult(id) {
+      if (state.readDown) throw new PaymentUnavailableError('fake Cardcom is down')
+      return results.get(id) ?? { saved: false }
+    },
+  }
+  return { cards, pages, results, state }
+}
+
+const SAVED: CardResult = {
+  saved: true,
+  booking: { ref: 'A1B2C3D4E5F6', arrival: ARRIVAL, departure: DEPARTURE },
+  cardOwner: 'Dana Ben David',
+  expiry: '04/2029',
+}
+
+describe('card step (Cardcom)', () => {
+  it('says so in the availability answer', async () => {
+    const { app } = harness({ cards: fakeCards().cards })
+    expect((await (await app.request('/api/availability')).json()).takesCard).toBe(true)
+    const { app: without } = harness()
+    expect((await (await without.request('/api/availability')).json()).takesCard).toBe(false)
+  })
+
+  it('holds the dates, then returns a card page for the Smoobu price', async () => {
+    const { cards, pages } = fakeCards()
+    const { pms, sent, book } = harness({ cards })
+    const response = await book()
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.cardUrl).toBe('https://secure.cardcom.solutions/lp/1')
+    expect(pms.reservations).toHaveLength(1)
+    expect(pages[0]).toMatchObject({ ref: body.ref, amount: 6600, arrival: ARRIVAL, name: GUEST.name })
+    expect(pages[0].successUrl).toMatch(/\/api\/payment\/return\?result=ok$/)
+    const owner = sent.find((mail) => mail.to === undefined) as OutgoingMail
+    expect(owner.text).toContain('Cardcom')
+  })
+
+  it('keeps the booking when Cardcom is down, and tells the owner to take the card by phone', async () => {
+    const fake = fakeCards()
+    fake.state.createDown = true
+    const { pms, sent, book } = harness({ cards: fake.cards })
+    const response = await book()
+    expect(response.status).toBe(200)
+    expect((await response.json()).cardUrl).toBeUndefined()
+    expect(pms.reservations).toHaveLength(1)
+    const owner = sent.find((mail) => mail.to === undefined) as OutgoingMail
+    expect(owner.text).toContain('טלפונית')
+  })
+
+  it('serves a return page that reports to the dialog', async () => {
+    const { app } = harness({ cards: fakeCards().cards })
+    const ok = await (await app.request('/api/payment/return?result=ok&lowprofilecode=x')).text()
+    expect(ok).toContain("result: 'ok'")
+    // Anything but "ok" is a failure, and nothing from the address is echoed into the page.
+    const odd = await (await app.request('/api/payment/return?result=%3Cscript%3E')).text()
+    expect(odd).toContain("result: 'failed'")
+    expect(odd).not.toContain('<script>alert')
+  })
+
+  it('emails the owner once when Cardcom confirms a saved card', async () => {
+    const fake = fakeCards()
+    fake.results.set('lp-9', SAVED)
+    const { sent, post } = harness({ cards: fake.cards })
+
+    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-9' })).status).toBe(200)
+    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-9' })).status).toBe(200)
+    expect(sent).toHaveLength(1)
+    expect(sent[0].subject).toContain('A1B2C3D4E5F6')
+  })
+
+  it('ignores a webhook Cardcom does not back up', async () => {
+    const { sent, post } = harness({ cards: fakeCards().cards })
+    // Forged body claiming success: only the id is used, and Cardcom knows nothing of it.
+    const response = await post('/api/payment/webhook', { LowProfileId: 'lp-forged', TokenInfo: { Token: 'x' } })
+    expect(response.status).toBe(200)
+    expect(sent).toHaveLength(0)
+  })
+
+  it('asks Cardcom to retry the webhook while it cannot be read', async () => {
+    const fake = fakeCards()
+    fake.state.readDown = true
+    const { post } = harness({ cards: fake.cards })
+    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-1' })).status).toBe(503)
   })
 })
 

@@ -84,6 +84,12 @@ const he = {
   awaitingConfirmation:
     'התאריכים שמורים עבורכם ונחזור אליכם טלפונית לאישור סופי. לא בוצע חיוב.',
   bookingRef: 'מספר בקשה',
+  continueToCard: 'המשך לפרטי כרטיס',
+  cardDepositNote:
+    'בשלב הבא תזינו כרטיס אשראי כפיקדון. הכרטיס לא יחויב עכשיו, אלא רק אם ייגרם נזק לווילה, או בביטול מאוחר לפי מדיניות הביטול.',
+  cardStepNote: 'התאריכים שמורים עבורכם. הזינו כרטיס אשראי לפיקדון: הוא נבדק ונשמר, ולא מחויב עכשיו.',
+  cardFrameTitle: 'טופס כרטיס אשראי מאובטח של Cardcom',
+  cardNotSaved: 'לא הצלחנו לשמור את הכרטיס. התאריכים שמורים עבורכם, ואת פרטי הכרטיס נשלים בשיחת הטלפון.',
 }
 
 export type Strings = typeof he
@@ -169,6 +175,12 @@ const en: Strings = {
   bookingReceived: 'We received your booking request!',
   awaitingConfirmation: 'Your dates are held and we will call you to confirm. Nothing has been charged.',
   bookingRef: 'Reference',
+  continueToCard: 'Continue to card details',
+  cardDepositNote:
+    'Next you will enter a credit card as a deposit. It is not charged now, only if the villa is damaged, or for a late cancellation under the policy above.',
+  cardStepNote: 'Your dates are held. Enter a credit card for the deposit: it is checked and kept, not charged now.',
+  cardFrameTitle: 'Secure credit card form by Cardcom',
+  cardNotSaved: "We couldn't save the card. Your dates are held, and we will take the card details when we call.",
 }
 
 export const STRINGS = { he, en }

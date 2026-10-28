@@ -31,6 +31,15 @@ export interface Env {
    */
   TURNSTILE_SECRET?: string
 
+  /**
+   * Cardcom terminal and its API name (Cardcom dashboard > Settings > API keys). With both set, an online
+   * booking ends on Cardcom's card page, which saves a token for the deposit. Unset: no card step.
+   */
+  CARDCOM_TERMINAL_NUMBER?: string
+  CARDCOM_API_NAME?: string
+  /** Point the client at another server instead of the real Cardcom. Testing only. */
+  CARDCOM_BASE_URL?: string
+
   /** The villa's hapisga iCal export, republished at /hapisga.ics for Smoobu (Worker only). Holds a token. */
   HAPISGA_ICAL_URL?: string
 }
