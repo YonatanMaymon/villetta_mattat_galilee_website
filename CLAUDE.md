@@ -1,8 +1,8 @@
 # Villetta: project notes
 
 Marketing site and online booking for a villa (Villetta Mattat Galilee). Hebrew-first (RTL), English under
-`/en`. Guests pick free dates in a popup; the request lands in the owner's Smoobu calendar for the owner
-(Sharon) to confirm by phone.
+`/en`. Guests pick free dates in a popup and leave a credit card as a deposit; once the card is saved, the
+reservation lands in the owner's (Sharon's) Smoobu calendar.
 
 ## Commands
 
@@ -39,11 +39,24 @@ Marketing site and online booking for a villa (Villetta Mattat Galilee). Hebrew-
   the site's own testimonials as ratings: Google treats reviews a business publishes about itself as spam.
 - **Booking API:** `server/` (Hono, runtime-agnostic) with two entries: `server/index.ts` (Node, local) and
   `worker/index.ts` (Cloudflare Worker: `/api/*` here, everything else served from `dist/` as static assets).
-  Routes: `GET /api/availability`, `GET /api/quote`, `POST /api/booking`, `POST /api/contact`,
+  Routes: `GET /api/availability`, `GET /api/quote`, `POST /api/booking`, `POST /api/booking/card`,
+  `POST /api/contact`,
   `GET /api/payment/return`, `POST /api/payment/webhook`. `shared/` holds
   code used by both browser and server.
 - **No database.** Smoobu is the only source of truth. Availability is cached 10 minutes in memory, cleared
-  after a booking; `POST /api/booking` re-checks uncached.
+  after a booking; `POST /api/booking` re-checks uncached. The one other piece of state is the date holds.
+- **Date holds** (`server/holds.ts`): while a guest is on the card page, nothing is in Smoobu, so the site
+  holds their nights for 15 minutes. Held nights show as busy in `/api/availability` and `/api/quote` and
+  block other website bookings, but not the holding guest (the dialog sends `heldRef` on a retry). The hold
+  is released once the reservation is in Smoobu. Airbnb and other channels don't see holds; Smoobu is checked
+  again before booking, so the worst case is a guest losing the dates, never a double booking. Node keeps
+  holds in memory; the Worker keeps them in the `DATE_HOLDS` Durable Object (`worker/holds.ts`, one
+  instance for the site). Trouble with the hold store is logged and the booking goes ahead unheld.
+- **Unfinished bookings:** a hold carries the card page id and the guest's details. Every minute
+  (`followUpExpiredHolds`: a cron trigger in `wrangler.toml`, a timer in `server/index.ts`) holds that ran
+  out unreleased are collected. If Cardcom shows a saved card after all, the stay is booked; otherwise the
+  owner gets a plain-Hebrew "guest started and didn't finish" email to call them, and the guest a "your booking
+  was not completed" one in their language. The privacy policy says so.
 - **Worker vs Node:** the Worker has no demo fallback, so missing secrets mean a 503 and the popup offers the
   phone. Never show invented availability on a deployed site.
 
@@ -55,14 +68,20 @@ is configured: `takesCard` in `/api/availability`).
 - **No card fields on the site.** The card step is Cardcom's hosted Low Profile page in an iframe
   (`server/cardcom.ts`, API v11): `CreateTokenOnly` with a J2 check, so the card is verified and saved as a
   token, and nothing is charged or held. The owner charges the token from the Cardcom dashboard.
-- Order: confirm creates the Smoobu reservation, then the Cardcom page. A guest who leaves without a card
-  still holds the dates; the owner's email says a separate "card saved" email follows. If Cardcom fails, the
-  booking stands and the email says to take the card by phone.
-- The booking travels through Cardcom in `ReturnValue` (`ref arrival departure`). The webhook trusts only the
-  `LowProfileId` in its body and reads the outcome back with `GetLpResult` before emailing the owner. The
-  iframe ends on `/api/payment/return`, which only `postMessage`s ok/failed to the dialog (same origin).
-- The reservation is created in Smoobu on confirm, flagged in its `notice` (`PENDING_NOTICE`, because the
-  API has no "unconfirmed" field) with `priceStatus: 0`. The flag only labels it; nothing releases it.
+- Order: confirm opens the Cardcom page and emails nobody; nothing is in Smoobu yet, so a guest who leaves
+  without a card holds nothing (after 15 minutes both the owner and the guest are emailed, see above). Once
+  Cardcom reports the card saved, the
+  server creates the Smoobu reservation and only then emails the owner (with the card's holder and expiry)
+  and the guest ("confirmed"). If the dates were taken meanwhile, nothing is booked: the owner gets a plain
+  Hebrew email telling her to call the guest about other dates, and the guest one saying there was a problem
+  and to contact us. If Cardcom fails to open the page, the reservation is made at once and the
+  owner's email says to take the card by phone.
+- Two reports of a saved card, both handled by `bookWithCard` (`server/app.ts`): the webhook, and the dialog's
+  `POST /api/booking/card` after the iframe `postMessage`s ok. Both trust only a `LowProfileId` and read the
+  outcome back with `GetLpResult`. One attempt per id per instance; across instances `findByReference` and
+  Smoobu refusing overlapping nights prevent a double booking. Everything booked comes from Cardcom's record:
+  `ReturnValue` (`ref arrival departure lang`) and `UIValues` (name, email, phone, prefilled from the dialog).
+- The reservation's `notice` holds `Ref: <ref>` (how `findByReference` finds it), with `priceStatus: 0`.
 - The price is Smoobu's quote, decided server-side, never taken from the browser. Totals can be fractional:
   format with `formatShekels` (`shared/money.ts`).
 - Abuse protection: honeypot field `website`, 3 bookings/hour per IP (in memory, per instance), Cloudflare

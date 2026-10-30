@@ -1,5 +1,5 @@
 import type { IsoDate } from '../shared/dates'
-import type { Lang } from '../shared/reservation'
+import { LANGS, type Lang } from '../shared/reservation'
 
 /**
  * Cardcom (API v11, "Low Profile"): the guest types their card into Cardcom's own hosted page, shown in an
@@ -48,10 +48,21 @@ export interface BookingTag {
   ref: string
   arrival: IsoDate
   departure: IsoDate
+  lang: Lang
+}
+
+/**
+ * The guest's details as Cardcom's form returns them. We prefill them from the booking dialog, so they are
+ * what the guest typed unless they changed them on the card form.
+ */
+export interface CardHolder {
+  name: string
+  email: string
+  phone: string
 }
 
 export type CardResult =
-  | { saved: true; booking: BookingTag; cardOwner: string; expiry: string }
+  | { saved: true; booking: BookingTag; holder: CardHolder; expiry: string }
   | { saved: false }
 
 export interface CardVault {
@@ -61,14 +72,18 @@ export interface CardVault {
   getResult(lowProfileId: string): Promise<CardResult>
 }
 
-/** The booking travels through Cardcom in `ReturnValue` (250 characters at most), as `ref arrival departure`. */
-export const encodeTag = ({ ref, arrival, departure }: BookingTag) => `${ref} ${arrival} ${departure}`
+/**
+ * The booking travels through Cardcom in `ReturnValue` (250 characters at most), as
+ * `ref arrival departure lang`.
+ */
+export const encodeTag = ({ ref, arrival, departure, lang }: BookingTag) => `${ref} ${arrival} ${departure} ${lang}`
 
 export function decodeTag(value: unknown): BookingTag | null {
   if (typeof value !== 'string') return null
-  const [ref, arrival, departure, ...rest] = value.split(' ')
-  if (!ref || !arrival || !departure || rest.length) return null
-  return { ref, arrival, departure }
+  const [ref, arrival, departure, lang, ...rest] = value.split(' ')
+  const known = LANGS.find((l) => l === lang)
+  if (!ref || !arrival || !departure || !known || rest.length) return null
+  return { ref, arrival, departure, lang: known }
 }
 
 export function createCardcomClient(config: CardcomConfig, deps: { fetch?: typeof fetch } = {}): CardVault {
@@ -142,11 +157,15 @@ export function createCardcomClient(config: CardcomConfig, deps: { fetch?: typeo
       if (typeof token?.Token !== 'string' || !token.Token || !booking) {
         return { saved: false }
       }
-      const ui = json.UIValues as { CardOwnerName?: unknown } | null
+      const ui = json.UIValues as Record<string, unknown> | null
+      const text = (key: string) => {
+        const value = ui?.[key]
+        return typeof value === 'string' ? value.trim() : ''
+      }
       return {
         saved: true,
         booking,
-        cardOwner: typeof ui?.CardOwnerName === 'string' ? ui.CardOwnerName : '',
+        holder: { name: text('CardOwnerName'), email: text('CardOwnerEmail'), phone: text('CardOwnerPhone') },
         expiry: `${String(token.CardMonth).padStart(2, '0')}/${String(token.CardYear)}`,
       }
     },

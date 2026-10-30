@@ -26,6 +26,20 @@ run_worker_first = ["/api/*", "/hapisga.ics"]
 binding = "HAPISGA_CACHE"
 id = "b856563cef7540bbb7e4cd0d6e4d96f3"
 
+# Holds a guest's dates on the website while they type their card (worker/holds.ts, server/holds.ts).
+[[durable_objects.bindings]]
+name = "DATE_HOLDS"
+class_name = "DateHoldsObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DateHoldsObject"]
+
+# Every minute: holds that ran out are followed up (booked if the card was saved after all, otherwise the
+# owner is emailed that the guest did not finish).
+[triggers]
+crons = ["* * * * *"]
+
 [vars]
 SMOOBU_APARTMENT_ID = "3514936"
 SMOOBU_CUSTOMER_ID = "1892906"

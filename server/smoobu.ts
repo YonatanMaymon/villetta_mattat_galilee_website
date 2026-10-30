@@ -12,8 +12,6 @@ const BASE_URL = 'https://login.smoobu.com'
 const TIMEOUT_MS = 10_000
 /** Rates are requested in slices so no single request asks for more than Smoobu may allow. */
 const RATES_SLICE_DAYS = 90
-/** Written into every website reservation so the owner can tell it apart from a confirmed booking. */
-export const PENDING_NOTICE = 'בקשה מהאתר – ממתין לאישור'
 
 export interface SmoobuConfig {
   apiKey: string
@@ -203,9 +201,8 @@ export function createSmoobuClient(config: SmoobuConfig, deps: SmoobuDeps = {}):
 
     async createReservation(reservation: NewReservation) {
       const [firstName, ...rest] = reservation.name.trim().split(/\s+/)
-      // Smoobu has no API field for "unconfirmed" (that flag is UI-only), so the notes carry it. The owner
-      // sees this in the calendar, phones the guest, and clears the line once the stay is agreed.
-      const notice = [PENDING_NOTICE, `Ref: ${reservation.ref}`, reservation.message].filter(Boolean).join('\n')
+      // The reference in the notes is how findByReference recognises a reservation we already made.
+      const notice = [`Ref: ${reservation.ref}`, reservation.message].filter(Boolean).join('\n')
       const json = (await call('POST', '/api/reservations', {
         body: {
           arrivalDate: reservation.arrival,

@@ -32,7 +32,10 @@ if (!hasMail) {
   deps.sendMail = logMail
 }
 
-const { app } = createApp(env, deps)
+const { app, followUpExpiredHolds } = createApp(env, deps)
+
+// What the Worker's every-minute cron trigger does: follow up date holds that ran out.
+setInterval(() => void followUpExpiredHolds(), 60_000).unref()
 
 serve({ fetch: app.fetch, port }, (info) => {
   const calendar = hasSmoobuApi ? 'Smoobu API' : env.SMOOBU_ICAL_URL ? 'Smoobu iCal (read-only)' : 'DEMO calendar'

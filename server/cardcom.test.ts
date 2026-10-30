@@ -37,7 +37,7 @@ describe('createCardPage', () => {
       TerminalNumber: 1000,
       ApiName: 'test-api',
       Operation: 'CreateTokenOnly',
-      ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13',
+      ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13 he',
       Amount: 12600,
       ISOCoinId: 1,
       Language: 'he',
@@ -66,15 +66,15 @@ describe('getResult', () => {
   it('reports a saved token with the booking read back from Cardcom', async () => {
     const fetchImpl = respond({
       ResponseCode: 0,
-      ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13',
+      ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13 en',
       Operation: 'CreateTokenOnly',
       TokenInfo: { Token: 'tok-123', CardMonth: 4, CardYear: 2029 },
-      UIValues: { CardOwnerName: 'Dana Ben David' },
+      UIValues: { CardOwnerName: 'Dana Ben David', CardOwnerEmail: 'dana@example.com', CardOwnerPhone: '052-1234567' },
     })
     expect(await client(fetchImpl).getResult('lp-1')).toEqual({
       saved: true,
-      booking: { ref: 'A1B2C3D4E5F6', arrival: '2026-11-10', departure: '2026-11-13' },
-      cardOwner: 'Dana Ben David',
+      booking: { ref: 'A1B2C3D4E5F6', arrival: '2026-11-10', departure: '2026-11-13', lang: 'en' },
+      holder: { name: 'Dana Ben David', email: 'dana@example.com', phone: '052-1234567' },
       expiry: '04/2029',
     })
     expect(sentBody(fetchImpl).body).toMatchObject({ LowProfileId: 'lp-1', TerminalNumber: 1000 })
@@ -94,9 +94,10 @@ describe('getResult', () => {
 
 describe('booking tag', () => {
   it('round-trips, and rejects anything else', () => {
-    const tag = { ref: 'ABC', arrival: '2026-11-10', departure: '2026-11-13' }
+    const tag = { ref: 'ABC', arrival: '2026-11-10', departure: '2026-11-13', lang: 'he' as const }
     expect(decodeTag(encodeTag(tag))).toEqual(tag)
-    expect(decodeTag('ABC 2026-11-10')).toBeNull()
+    expect(decodeTag('ABC 2026-11-10 2026-11-13')).toBeNull()
+    expect(decodeTag('ABC 2026-11-10 2026-11-13 fr')).toBeNull()
     expect(decodeTag(42)).toBeNull()
   })
 })

@@ -3,6 +3,10 @@ import { createApp } from '../server/app'
 import type { Env } from '../server/env'
 import { logMail } from '../server/logMail'
 import { FEED_PATH, serveFeed, type FeedStore } from './hapisga'
+import { durableHolds, type HoldsNamespace } from './holds'
+
+// Wrangler finds the Durable Object class among the entry's exports (see wrangler.toml).
+export { DateHoldsObject } from './holds'
 
 /**
  * Cloudflare Worker: the whole site on one origin. `/api/*` and `/hapisga.ics` (see hapisga.ts) are handled
@@ -19,23 +23,25 @@ interface Fetcher {
   fetch(request: Request): Promise<Response>
 }
 
-type Bindings = Env & { ASSETS?: Fetcher; HAPISGA_CACHE?: FeedStore }
+type Bindings = Env & { ASSETS?: Fetcher; HAPISGA_CACHE?: FeedStore; DATE_HOLDS?: HoldsNamespace }
 
-let app: ReturnType<typeof createApp>['app'] | undefined
+let api: ReturnType<typeof createApp> | undefined
 
 /** Built once per Worker instance, so the availability cache and rate-limit counters survive requests. */
 function boot(env: Bindings) {
   // With all three mail secrets set the app sends through Resend (its default); without them, emails
   // are logged to `wrangler tail` rather than dropped silently.
   const hasMail = Boolean(env.RESEND_API_KEY && env.NOTIFY_TO_EMAIL && env.MAIL_FROM)
-  app ??= createApp(env, hasMail ? {} : { sendMail: logMail }).app
-  return app
+  // Holds must be shared by every instance; without the binding each instance keeps its own (memory).
+  const holds = env.DATE_HOLDS ? durableHolds(env.DATE_HOLDS) : undefined
+  api ??= createApp(env, { holds, ...(hasMail ? {} : { sendMail: logMail }) })
+  return api
 }
 
 export default {
   async fetch(request: Request, env: Bindings, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(request.url)
-    if (pathname.startsWith('/api/')) return boot(env).fetch(request, env, ctx)
+    if (pathname.startsWith('/api/')) return boot(env).app.fetch(request, env, ctx)
     if (pathname === FEED_PATH && env.HAPISGA_CACHE) {
       return serveFeed(request, {
         url: env.HAPISGA_ICAL_URL,
@@ -44,5 +50,10 @@ export default {
       })
     }
     return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 })
+  },
+
+  /** The every-minute cron trigger (wrangler.toml): follows up date holds that ran out. */
+  async scheduled(_event: unknown, env: Bindings, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(boot(env).followUpExpiredHolds())
   },
 }

@@ -58,7 +58,7 @@ const he = {
   clearDates: 'ניקוי תאריכים',
   total: 'סה"כ',
   money: (n: number) => `${formatShekels(n)}₪`,
-  guestDetails: 'מלאו את פרטיכם ונחזור אליכם לאישור.',
+  guestDetails: 'מלאו את פרטיכם להזמנה.',
   bookingPrivacy:
     'נשתמש בשם, בטלפון ובאימייל כדי לטפל בהזמנה ולחזור אליכם לגביה. הם יישמרו במערכת ההזמנות שלנו.',
   reserveNow: 'הזמינו עכשיו',
@@ -80,16 +80,17 @@ const he = {
   bookingByPhone: 'ההזמנה מתבצעת טלפונית. בדקו את התאריכים הפנויים ביומן והתקשרו אלינו.',
   securityDepositNote:
     'לפני ההגעה נבקש פרטי כרטיס אשראי כפיקדון. הכרטיס יחויב רק אם ייגרם נזק לווילה, או בביטול מאוחר לפי מדיניות הביטול.',
-  bookingReceived: 'קיבלנו את בקשת ההזמנה!',
-  awaitingConfirmation:
-    'התאריכים שמורים עבורכם ונחזור אליכם טלפונית לאישור סופי. לא בוצע חיוב.',
-  bookingRef: 'מספר בקשה',
+  bookingReceived: 'ההזמנה שלכם אושרה!',
+  bookingConfirmedNote: 'התאריכים שמורים עבורכם, ושלחנו לכם את הפרטים במייל. לא בוצע חיוב.',
+  bookingRef: 'מספר הזמנה',
   continueToCard: 'המשך לפרטי כרטיס',
   cardDepositNote:
     'בשלב הבא תזינו כרטיס אשראי כפיקדון. הכרטיס לא יחויב עכשיו, אלא רק אם ייגרם נזק לווילה, או בביטול מאוחר לפי מדיניות הביטול.',
-  cardStepNote: 'התאריכים שמורים עבורכם. הזינו כרטיס אשראי לפיקדון: הוא נבדק ונשמר, ולא מחויב עכשיו.',
+  cardStepNote:
+    'ההזמנה נשמרה, ותאושר ברגע שהכרטיס ייבדק. הזינו כרטיס אשראי לפיקדון: הוא נבדק ונשמר, ולא מחויב עכשיו.',
+  confirmingBooking: 'מאשרים את ההזמנה…',
   cardFrameTitle: 'טופס כרטיס אשראי מאובטח של Cardcom',
-  cardNotSaved: 'לא הצלחנו לשמור את הכרטיס. התאריכים שמורים עבורכם, ואת פרטי הכרטיס נשלים בשיחת הטלפון.',
+  cardNotSaved: 'הכרטיס לא נשמר, ולכן ההזמנה לא אושרה. נסו שוב, או התקשרו אלינו.',
 }
 
 export type Strings = typeof he
@@ -149,7 +150,7 @@ const en: Strings = {
   clearDates: 'Clear dates',
   total: 'Total',
   money: (n) => `₪${formatShekels(n)}`,
-  guestDetails: 'Leave your details and we will get back to you to confirm.',
+  guestDetails: 'Leave your details to book.',
   bookingPrivacy:
     'We use your name, phone and email to handle this booking and to get back to you about it. ' +
     'They are kept in our booking system.',
@@ -172,15 +173,18 @@ const en: Strings = {
   bookingByPhone: 'Bookings are made by phone. Check the free dates in the calendar and give us a call.',
   securityDepositNote:
     'Before arrival we will ask for credit card details as a deposit. The card is charged only if the villa is damaged, or for a late cancellation under the policy above.',
-  bookingReceived: 'We received your booking request!',
-  awaitingConfirmation: 'Your dates are held and we will call you to confirm. Nothing has been charged.',
+  bookingReceived: 'Your reservation is confirmed!',
+  bookingConfirmedNote: 'Your dates are booked, and we have emailed you the details. Nothing has been charged.',
   bookingRef: 'Reference',
   continueToCard: 'Continue to card details',
   cardDepositNote:
     'Next you will enter a credit card as a deposit. It is not charged now, only if the villa is damaged, or for a late cancellation under the policy above.',
-  cardStepNote: 'Your dates are held. Enter a credit card for the deposit: it is checked and kept, not charged now.',
+  cardStepNote:
+    'Your reservation is saved, and is confirmed as soon as the card is checked. Enter a credit card for the ' +
+    'deposit: it is checked and kept, not charged now.',
+  confirmingBooking: 'Confirming your reservation…',
   cardFrameTitle: 'Secure credit card form by Cardcom',
-  cardNotSaved: "We couldn't save the card. Your dates are held, and we will take the card details when we call.",
+  cardNotSaved: "The card wasn't saved, so the reservation isn't confirmed. Please try again, or call us.",
 }
 
 export const STRINGS = { he, en }

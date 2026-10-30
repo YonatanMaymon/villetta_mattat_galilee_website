@@ -43,7 +43,7 @@ export interface PropertyManagement {
   /** Nights that cannot be booked, from `from` up to and including `until`. */
   getBusyNights(range: { from: IsoDate; until: IsoDate }): Promise<Set<IsoDate>>
   quote(arrival: IsoDate, departure: IsoDate): Promise<Quote>
-  /** Creates the reservation, flagged in its notes as awaiting the owner's confirmation. Returns its id. */
+  /** Creates the reservation, with our reference in its notes. Returns its id. */
   createReservation(reservation: NewReservation): Promise<string>
   /** Looks for a reservation we created earlier (same `ref`), so a double submit never duplicates it. */
   findByReference(ref: string, arrival: IsoDate): Promise<string | null>

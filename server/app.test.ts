@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { createApp } from './app'
 import { PaymentUnavailableError, type CardPageRequest, type CardResult, type CardVault } from './cardcom'
 import type { Env } from './env'
-import { createFakePms } from './fakes'
+import { createFakePms, type FakePms } from './fakes'
 import type { OutgoingMail } from './mail'
-import { PENDING_NOTICE } from './smoobu'
 
 const TODAY = '2026-10-01'
 const ARRIVAL = '2026-11-10'
@@ -18,12 +17,15 @@ const GUEST = {
 }
 
 /** A booking API backed by an in-memory Smoobu, with the sent mail captured rather than delivered. */
-function harness(options: { blocked?: string[]; env?: Env; cards?: CardVault } = {}) {
-  const pms = createFakePms({ blocked: options.blocked, nightlyPrice: () => 2200 })
+function harness(
+  options: { blocked?: string[]; env?: Env; cards?: CardVault; pms?: FakePms; now?: () => number } = {},
+) {
+  const pms = options.pms ?? createFakePms({ blocked: options.blocked, nightlyPrice: () => 2200 })
   const sent: OutgoingMail[] = []
-  const { app } = createApp(options.env ?? {}, {
+  const { app, followUpExpiredHolds } = createApp(options.env ?? {}, {
     pms,
     cards: options.cards,
+    now: options.now,
     today: () => TODAY,
     sendMail: async (mail) => {
       sent.push(mail)
@@ -40,7 +42,7 @@ function harness(options: { blocked?: string[]; env?: Env; cards?: CardVault } =
   const book = (overrides: Record<string, unknown> = {}, ip?: string) =>
     post('/api/booking', { ...GUEST, arrival: ARRIVAL, departure: DEPARTURE, ...overrides }, ip)
 
-  return { app, pms, sent, post, book }
+  return { app, pms, sent, post, book, followUpExpiredHolds }
 }
 
 describe('GET /api/availability', () => {
@@ -206,14 +208,6 @@ describe('POST /api/booking', () => {
     expect(response.status).toBe(200)
     expect(pms.reservations).toHaveLength(1)
   })
-
-  it('writes the awaiting-confirmation flag into the Smoobu notes', async () => {
-    // The fake records what it was given; this is the contract the real client turns into `notice`.
-    const { pms, book } = harness()
-    await book()
-    expect(PENDING_NOTICE).toContain('awaiting confirmation')
-    expect(pms.reservations[0].ref).toBeTruthy()
-  })
 })
 
 describe('POST /api/quote', () => {
@@ -265,15 +259,20 @@ function fakeCards() {
       return results.get(id) ?? { saved: false }
     },
   }
-  return { cards, pages, results, state }
+  /** The guest finishes card page `lp-n`: Cardcom now reports the card saved, with the prefilled details. */
+  const save = (n = 1) => {
+    const page = pages[n - 1]
+    results.set(`lp-${n}`, {
+      saved: true,
+      booking: { ref: page.ref, arrival: page.arrival, departure: page.departure, lang: page.lang },
+      holder: { name: page.name, email: page.email, phone: page.phone },
+      expiry: '04/2029',
+    })
+  }
+  return { cards, pages, results, state, save }
 }
 
-const SAVED: CardResult = {
-  saved: true,
-  booking: { ref: 'A1B2C3D4E5F6', arrival: ARRIVAL, departure: DEPARTURE },
-  cardOwner: 'Dana Ben David',
-  expiry: '04/2029',
-}
+const ownerMails = (sent: OutgoingMail[]) => sent.filter((mail) => mail.to === undefined)
 
 describe('card step (Cardcom)', () => {
   it('says so in the availability answer', async () => {
@@ -283,31 +282,122 @@ describe('card step (Cardcom)', () => {
     expect((await (await without.request('/api/availability')).json()).takesCard).toBe(false)
   })
 
-  it('holds the dates, then returns a card page for the Smoobu price', async () => {
+  it('opens a card page for the Smoobu price, and books and emails nothing yet', async () => {
     const { cards, pages } = fakeCards()
     const { pms, sent, book } = harness({ cards })
     const response = await book()
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.cardUrl).toBe('https://secure.cardcom.solutions/lp/1')
-    expect(pms.reservations).toHaveLength(1)
-    expect(pages[0]).toMatchObject({ ref: body.ref, amount: 6600, arrival: ARRIVAL, name: GUEST.name })
+    expect(body.card).toEqual({ id: 'lp-1', url: 'https://secure.cardcom.solutions/lp/1' })
+    expect(pms.reservations).toHaveLength(0)
+    expect(pages[0]).toMatchObject({ ref: body.ref, amount: 6600, arrival: ARRIVAL, name: GUEST.name, lang: 'he' })
     expect(pages[0].successUrl).toMatch(/\/api\/payment\/return\?result=ok$/)
-    const owner = sent.find((mail) => mail.to === undefined) as OutgoingMail
-    expect(owner.text).toContain('Cardcom')
+    // Everyone hears once it is settled: booked, or the hold runs out without a card.
+    expect(sent).toHaveLength(0)
   })
 
-  it('keeps the booking when Cardcom is down, and tells the owner to take the card by phone', async () => {
+  it('books the stay once the card is saved, and only then emails the owner and confirms to the guest', async () => {
+    const fake = fakeCards()
+    const { pms, sent, book, post } = harness({ cards: fake.cards })
+    const { ref } = await (await book()).json()
+    fake.save()
+
+    const response = await post('/api/booking/card', { lowProfileId: 'lp-1' })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ref })
+    expect(pms.reservations).toHaveLength(1)
+    expect(pms.reservations[0]).toMatchObject({ ref, arrival: ARRIVAL, departure: DEPARTURE, name: GUEST.name, amount: 6600 })
+
+    const owner = ownerMails(sent)
+    expect(owner).toHaveLength(1)
+    expect(owner[0].text).toContain('04/2029')
+    const confirmed = sent.filter((mail) => mail.to === GUEST.email)
+    expect(confirmed.map((mail) => mail.subject)).toEqual([expect.stringContaining('אושרה')])
+  })
+
+  it('books nothing while Cardcom has no saved card', async () => {
+    const { pms, sent, book, post } = harness({ cards: fakeCards().cards })
+    await book()
+    const response = await post('/api/booking/card', { lowProfileId: 'lp-1' })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toEqual({ error: 'card_not_saved' })
+    expect(pms.reservations).toHaveLength(0)
+    expect(ownerMails(sent)).toHaveLength(0)
+  })
+
+  it('books from the webhook when the dialog is gone, once however often the card is reported', async () => {
+    const fake = fakeCards()
+    const { pms, sent, book, post } = harness({ cards: fake.cards })
+    await book()
+    fake.save()
+
+    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-1' })).status).toBe(200)
+    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-1' })).status).toBe(200)
+    expect((await post('/api/booking/card', { lowProfileId: 'lp-1' })).status).toBe(200)
+    expect(pms.reservations).toHaveLength(1)
+    expect(ownerMails(sent)).toHaveLength(1)
+  })
+
+  it('books once when the dialog and the webhook reach different instances', async () => {
+    const fake = fakeCards()
+    const pms = createFakePms({ nightlyPrice: () => 2200 })
+    const first = harness({ cards: fake.cards, pms })
+    const second = harness({ cards: fake.cards, pms })
+    await first.book()
+    fake.save()
+
+    const [a, b] = await Promise.all([
+      first.post('/api/booking/card', { lowProfileId: 'lp-1' }),
+      second.post('/api/payment/webhook', { LowProfileId: 'lp-1' }),
+    ])
+    expect([a.status, b.status]).toEqual([200, 200])
+    expect(pms.reservations).toHaveLength(1)
+  })
+
+  it('tells the guest and the owner when the dates were taken while the card was typed', async () => {
+    const fake = fakeCards()
+    const { pms, sent, book, post } = harness({ cards: fake.cards })
+    await book()
+    pms.blocked.add('2026-11-11')
+    fake.save()
+
+    const response = await post('/api/booking/card', { lowProfileId: 'lp-1' })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toEqual({ error: 'dates_unavailable' })
+    expect(pms.reservations).toHaveLength(0)
+    const owner = ownerMails(sent)
+    expect(owner).toHaveLength(1)
+    expect(owner[0].subject).toContain('נתפסו')
+    // Plain Hebrew for the owner: what happened, what to do, and no system names.
+    expect(owner[0].text).toContain('התקשרו לאורח')
+    expect(owner[0].text).not.toMatch(/Cardcom|Smoobu/)
+    // The guest may have closed the dialog, so they are told by email to get in touch.
+    const problem = sent.find((mail) => mail.to === GUEST.email && mail.subject.includes('בעיה'))
+    expect(problem?.text).toContain('צרו איתנו קשר')
+  })
+
+  it('tries again after Smoobu was down, rather than remembering the failure', async () => {
+    const fake = fakeCards()
+    const { pms, book, post } = harness({ cards: fake.cards })
+    await book()
+    fake.save()
+    pms.mode.create = 'down'
+    expect((await post('/api/booking/card', { lowProfileId: 'lp-1' })).status).toBe(503)
+    pms.mode.create = 'ok'
+    expect((await post('/api/booking/card', { lowProfileId: 'lp-1' })).status).toBe(200)
+    expect(pms.reservations).toHaveLength(1)
+  })
+
+  it('books right away when Cardcom is down, and tells the owner to take the card by phone', async () => {
     const fake = fakeCards()
     fake.state.createDown = true
     const { pms, sent, book } = harness({ cards: fake.cards })
     const response = await book()
     expect(response.status).toBe(200)
-    expect((await response.json()).cardUrl).toBeUndefined()
+    expect((await response.json()).card).toBeUndefined()
     expect(pms.reservations).toHaveLength(1)
-    const owner = sent.find((mail) => mail.to === undefined) as OutgoingMail
-    expect(owner.text).toContain('טלפונית')
+    expect(ownerMails(sent)[0].text).toContain('טלפונית')
   })
 
   it('serves a return page that reports to the dialog', async () => {
@@ -320,22 +410,12 @@ describe('card step (Cardcom)', () => {
     expect(odd).not.toContain('<script>alert')
   })
 
-  it('emails the owner once when Cardcom confirms a saved card', async () => {
-    const fake = fakeCards()
-    fake.results.set('lp-9', SAVED)
-    const { sent, post } = harness({ cards: fake.cards })
-
-    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-9' })).status).toBe(200)
-    expect((await post('/api/payment/webhook', { LowProfileId: 'lp-9' })).status).toBe(200)
-    expect(sent).toHaveLength(1)
-    expect(sent[0].subject).toContain('A1B2C3D4E5F6')
-  })
-
   it('ignores a webhook Cardcom does not back up', async () => {
-    const { sent, post } = harness({ cards: fakeCards().cards })
+    const { pms, sent, post } = harness({ cards: fakeCards().cards })
     // Forged body claiming success: only the id is used, and Cardcom knows nothing of it.
     const response = await post('/api/payment/webhook', { LowProfileId: 'lp-forged', TokenInfo: { Token: 'x' } })
     expect(response.status).toBe(200)
+    expect(pms.reservations).toHaveLength(0)
     expect(sent).toHaveLength(0)
   })
 
@@ -344,6 +424,95 @@ describe('card step (Cardcom)', () => {
     fake.state.readDown = true
     const { post } = harness({ cards: fake.cards })
     expect((await post('/api/payment/webhook', { LowProfileId: 'lp-1' })).status).toBe(503)
+  })
+})
+
+describe('date holds while the card is typed', () => {
+  const OTHER = { name: 'Noa Levi', email: 'noa@example.com', phone: '054-7654321' }
+
+  it('shows the held nights as busy, and refuses them to the next guest', async () => {
+    const { app, book } = harness({ cards: fakeCards().cards })
+    await book()
+    const body = await (await app.request('/api/availability')).json()
+    expect(body.busyNights).toEqual(['2026-11-10', '2026-11-11', '2026-11-12'])
+    expect((await app.request(`/api/quote?arrival=${ARRIVAL}&departure=${DEPARTURE}`)).status).toBe(409)
+
+    const second = await book({ ...OTHER, arrival: '2026-11-12', departure: '2026-11-14' }, '198.51.100.20')
+    expect(second.status).toBe(409)
+    expect(await second.json()).toEqual({ error: 'dates_unavailable' })
+  })
+
+  it('does not block the guest holding them, and lets go once the stay is in Smoobu', async () => {
+    const fake = fakeCards()
+    const { app, pms, book, post } = harness({ cards: fake.cards })
+    await book()
+    fake.save()
+    expect((await post('/api/booking/card', { lowProfileId: 'lp-1' })).status).toBe(200)
+    expect(pms.reservations).toHaveLength(1)
+    // Smoobu blocks the nights now; cancelling the reservation there must free them on the site too.
+    pms.reservations.length = 0
+    const body = await (await app.request('/api/availability')).json()
+    expect(body.busyNights).toEqual([])
+  })
+
+  it('frees the nights after 15 minutes', async () => {
+    let now = 0
+    const { book } = harness({ cards: fakeCards().cards, now: () => now })
+    await book()
+    now = 15 * 60_000 + 1
+    expect((await book({ ...OTHER }, '198.51.100.20')).status).toBe(200)
+  })
+
+  it('tells the owner and the guest, after 15 minutes, about a booking left without a card', async () => {
+    let now = 0
+    const { pms, sent, book, followUpExpiredHolds } = harness({ cards: fakeCards().cards, now: () => now })
+    await book()
+    await followUpExpiredHolds()
+    expect(sent).toHaveLength(0)
+
+    now = 15 * 60_000 + 1
+    await followUpExpiredHolds()
+    await followUpExpiredHolds()
+    expect(pms.reservations).toHaveLength(0)
+    const owner = ownerMails(sent)
+    expect(owner).toHaveLength(1)
+    expect(owner[0].subject).toContain('לא סיים')
+    expect(owner[0].text).toContain(GUEST.phone)
+    expect(owner[0].text).toContain('התקשרו לאורח')
+    expect(owner[0].text).not.toMatch(/Cardcom|Smoobu/)
+    const guest = sent.filter((mail) => mail.to === GUEST.email)
+    expect(guest.map((mail) => mail.subject)).toEqual([expect.stringContaining('לא הושלמה')])
+    expect(guest[0].text).toContain('לא בוצע חיוב')
+  })
+
+  it('books a card that was saved without anyone hearing of it, instead of reporting it unfinished', async () => {
+    let now = 0
+    const fake = fakeCards()
+    const { pms, sent, book, followUpExpiredHolds } = harness({ cards: fake.cards, now: () => now })
+    await book()
+    fake.save()
+    now = 15 * 60_000 + 1
+    await followUpExpiredHolds()
+    expect(pms.reservations).toHaveLength(1)
+    expect(ownerMails(sent).map((mail) => mail.subject)).toEqual([expect.stringContaining('הזמנה חדשה')])
+  })
+
+  it('does not report a guest who finished', async () => {
+    let now = 0
+    const fake = fakeCards()
+    const { sent, book, post, followUpExpiredHolds } = harness({ cards: fake.cards, now: () => now })
+    await book()
+    fake.save()
+    await post('/api/booking/card', { lowProfileId: 'lp-1' })
+    now = 15 * 60_000 + 1
+    await followUpExpiredHolds()
+    expect(ownerMails(sent)).toHaveLength(1)
+  })
+
+  it('lets the same guest try again at once after a card that was not saved', async () => {
+    const { book } = harness({ cards: fakeCards().cards })
+    const { ref } = await (await book()).json()
+    expect((await book({ heldRef: ref })).status).toBe(200)
   })
 })
 

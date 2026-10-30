@@ -24,6 +24,11 @@ export const bookingSchema = z.object({
   website: honeypot,
   /** Cloudflare Turnstile token. Absent when Turnstile is not configured (local development). */
   turnstileToken: z.string().max(4096).optional(),
+  /**
+   * The reference of this dialog's earlier attempt, whose date hold the new one replaces. References are
+   * random and shown only to their guest, so nobody can release someone else's hold this way.
+   */
+  heldRef: z.string().max(40).optional(),
 })
 
 /**
@@ -31,6 +36,11 @@ export const bookingSchema = z.object({
  * site sharing the widget cannot be spent on a booking.
  */
 export const TURNSTILE_ACTION = 'booking'
+
+/** Cardcom's id for one card page. Both the dialog and Cardcom's webhook report it once the page is done. */
+export const cardIdSchema = z.string().regex(/^[\w-]{1,100}$/)
+
+export const cardBookingSchema = z.object({ lowProfileId: cardIdSchema })
 
 export const contactSchema = z.object({
   name: trimmed(120).min(1),
@@ -70,10 +80,16 @@ export interface BookingResponse {
   amount: number
   currency: string
   /**
-   * Cardcom's one-time card page for this booking, shown in an iframe. Absent when Cardcom is not set up,
-   * or could not be reached: the dates are held anyway and the owner takes the card by phone.
+   * Cardcom's one-time card page, shown in an iframe. When present, nothing is booked yet: the reservation
+   * is made once the card is saved. Absent when Cardcom is not set up, or could not be reached: then the
+   * reservation is already made and the owner takes the card by phone.
    */
-  cardUrl?: string
+  card?: { id: string; url: string }
+}
+
+/** The reservation made after the card was saved. */
+export interface CardBookingResponse {
+  ref: string
 }
 
 export type ApiErrorCode =
@@ -84,6 +100,7 @@ export type ApiErrorCode =
   | 'send_failed'
   | 'rate_limited'
   | 'bot_check_failed'
+  | 'card_not_saved'
 
 export interface ApiError {
   error: ApiErrorCode

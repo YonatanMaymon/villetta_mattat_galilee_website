@@ -4,6 +4,7 @@ import type {
   AvailabilityResponse,
   BookingRequest,
   BookingResponse,
+  CardBookingResponse,
   ContactRequest,
   QuoteResponse,
 } from '../../shared/reservation'
@@ -53,9 +54,13 @@ export const fetchQuote = (arrival: string, departure: string, signal?: AbortSig
   request<QuoteResponse>(`/api/quote?arrival=${arrival}&departure=${departure}`, { signal })
 
 /**
- * Creates the reservation in Smoobu, flagged for the owner to confirm. Nothing is charged. When Cardcom is
- * set up, the answer carries the card page that follows.
+ * Nothing is charged. When Cardcom is set up, the answer carries the card page and nothing is booked yet
+ * (see `completeCardBooking`); otherwise the reservation is already in Smoobu.
  */
 export const submitBooking = (body: BookingRequest) => request<BookingResponse>('/api/booking', jsonPost(body))
+
+/** Once Cardcom's page reports the card saved: makes the reservation in Smoobu. */
+export const completeCardBooking = (lowProfileId: string) =>
+  request<CardBookingResponse>('/api/booking/card', jsonPost({ lowProfileId }))
 
 export const submitContact = (body: ContactRequest) => request<{ ok: true }>('/api/contact', jsonPost(body))

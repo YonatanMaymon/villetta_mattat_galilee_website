@@ -85,7 +85,7 @@ export const PRIVACY_POLICY: LegalPage = {
     title: 'Privacy Policy',
     subtitle: 'What happens to the details you leave with us',
   },
-  updated: '20 October 2026',
+  updated: '29 October 2026',
   sections: [
     {
       title: 'In short',
@@ -99,7 +99,7 @@ export const PRIVACY_POLICY: LegalPage = {
       title: 'What we collect',
       paragraphs: [],
       items: [
-        'Booking requests: full name, phone, email and the dates of the stay.',
+        'Bookings: full name, phone, email and the dates of the stay.',
         "A credit card for the deposit, at the end of a booking: typed straight into Cardcom's secure " +
           "form, never passing through the site. We see only the cardholder's name and the expiry date.",
         'The contact form: full name, phone, email (optional) and your message.',
@@ -110,9 +110,11 @@ export const PRIVACY_POLICY: LegalPage = {
     {
       title: 'Why we use it',
       paragraphs: [
-        'To record your booking request, call you to confirm it and arrange your stay, answer messages, ' +
-          'and see which pages of the site are useful. We will not send you marketing email without ' +
-          'your consent.',
+        'To record your booking, email you about its status and arrange your stay, answer messages, ' +
+          'and see which pages of the site are useful. If you start a booking but do not enter a credit ' +
+          'card, the details you filled in are kept for 15 minutes and then sent to us, so we can get back ' +
+          'to you about the booking, and we email you that it was not completed. We will not send you ' +
+          'marketing email without your consent.',
       ],
     },
     {
@@ -122,11 +124,12 @@ export const PRIVACY_POLICY: LegalPage = {
           'on servers outside Israel.',
       ],
       items: [
-        'Smoobu, our booking system: keeps the booking request.',
-        'Resend, an email service: sends us your request or message, and sends you the confirmation ' +
-          'that we received your request.',
+        'Smoobu, our booking system: keeps the booking.',
+        'Resend, an email service: sends us your booking or message, and sends you emails about your ' +
+          'booking (confirmed, not completed, or that there was a problem with it).',
         'Cardcom, an Israeli card processor: checks the credit card and keeps it for the deposit, so we ' +
-          'can charge it only for damage or a late cancellation.',
+          'can charge it only for damage or a late cancellation. It also receives the name, phone and ' +
+          'email you entered, so they are filled in on the card form.',
         'Cloudflare: hosts the site, runs the security check on the forms (Turnstile) and measures ' +
           'aggregate browsing (Web Analytics).',
       ],

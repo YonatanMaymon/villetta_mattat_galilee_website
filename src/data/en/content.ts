@@ -76,8 +76,8 @@ export const FOOTER = {
 export const BOOKING = {
   title: 'Book Your Stay',
   terms:
-    'Your booking is pending our telephone confirmation and is not final until then. ' +
-    'Payment for the stay is made on arrival. Cancel up to 8 days before arrival: no charge. ' +
+    'Your booking is confirmed as soon as your credit card is checked and saved as a deposit, and we ' +
+    'email you the confirmation. Payment for the stay is made on arrival. Cancel up to 8 days before arrival: no charge. ' +
     'Cancel 4 to 7 days before: 50% of the price. Cancel 3 days or less before, or no-show: full price. ' +
     'If other guests rebook the dates, the charge is cancelled or refunded in full. ' +
     'If Home Front Command instructions or the security situation prevent the stay, cancellation is free.',

@@ -1,7 +1,7 @@
 import { createHmac, createHash } from 'node:crypto'
 import { describe, expect, it, vi } from 'vitest'
 import { PmsRejectedError, PmsUnavailableError } from './pms'
-import { canonicalString, createSmoobuClient, encodeQuery, PENDING_NOTICE, sha256Hex, signRequest } from './smoobu'
+import { canonicalString, createSmoobuClient, encodeQuery, sha256Hex, signRequest } from './smoobu'
 
 const config = { apiKey: 'key-123', apiSecret: 'secret-abc', apartmentId: 42, customerId: 7 }
 
@@ -171,7 +171,7 @@ describe('createReservation', () => {
     amount: 6400,
   }
 
-  it('creates an unpaid reservation flagged for the owner, carrying our reference in the notes', async () => {
+  it('creates an unpaid reservation carrying our reference in the notes', async () => {
     const { client, calls } = clientWith(() => json({ id: 555 }))
     expect(await client.createReservation(reservation)).toBe('555')
     const body = JSON.parse(String(calls[0].init.body))
@@ -186,9 +186,7 @@ describe('createReservation', () => {
       priceStatus: 0,
       language: 'he',
     })
-    expect(body.notice).toContain('abc123')
-    // The owner has to be able to tell a website request from a booking they confirmed themselves.
-    expect(body.notice).toContain(PENDING_NOTICE)
+    expect(body.notice).toBe('Ref: abc123\nAnniversary')
   })
 
   it('treats a 400 as a refusal (do not retry) and outages as retryable', async () => {

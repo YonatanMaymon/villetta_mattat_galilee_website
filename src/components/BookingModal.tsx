@@ -6,7 +6,7 @@ import { PHONE_DISPLAY, PHONE_HREF } from '../data/content'
 import { useAvailability } from '../hooks/useAvailability'
 import { useQuote } from '../hooks/useQuote'
 import { useLanguage } from '../i18n/LanguageContext'
-import { ApiRequestError, submitBooking } from '../lib/api'
+import { ApiRequestError, completeCardBooking, submitBooking } from '../lib/api'
 import { EMPTY_SELECTION, nightsBetween, type Selection } from '../../shared/dates'
 import { TURNSTILE_ACTION, type Lang } from '../../shared/reservation'
 
@@ -27,7 +27,14 @@ const backButtonClass =
   'cursor-pointer border border-black px-6 py-3 transition hover:bg-black hover:text-white'
 
 type Step = 1 | 2 | 3 | 4
-type FormError = 'datesTaken' | 'rateLimited' | 'sendFailed' | 'calendarError' | 'bookingUnavailable' | 'botCheckFailed'
+type FormError =
+  | 'datesTaken'
+  | 'rateLimited'
+  | 'sendFailed'
+  | 'calendarError'
+  | 'bookingUnavailable'
+  | 'botCheckFailed'
+  | 'cardNotSaved'
 
 interface Guest {
   name: string
@@ -60,14 +67,17 @@ function errorFor(error: unknown): FormError {
       return 'calendarError'
     case 'booking_unavailable':
       return 'bookingUnavailable'
+    case 'card_not_saved':
+      return 'cardNotSaved'
     default:
       return 'sendFailed'
   }
 }
 
 /**
- * Booking in three screens: pick the dates, leave your details, confirm. The reservation reaches Smoobu
- * on the last step, flagged for the owner to confirm by phone. No card is collected and nothing is charged.
+ * Booking in three screens: pick the dates, leave your details, confirm; plus Cardcom's card page when it
+ * is set up. The reservation reaches Smoobu once the card is saved (or on confirm, without Cardcom).
+ * Nothing is charged.
  */
 export default function BookingModal({ open, onClose }: BookingModalProps) {
   const {
@@ -90,9 +100,11 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [error, setError] = useState<FormError | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmedRef, setConfirmedRef] = useState<string | null>(null)
-  // Step 4: the reservation exists and Cardcom's card page is showing.
-  const [card, setCard] = useState<{ ref: string; url: string } | null>(null)
-  const [cardFailed, setCardFailed] = useState(false)
+  // Step 4: Cardcom's card page is showing. Nothing is booked until the card is saved.
+  const [card, setCard] = useState<{ id: string; url: string } | null>(null)
+  // The server holds the dates while the card page is open. A retry (or reopening the dialog) sends this
+  // back so the guest's own hold does not block them; it is deliberately kept when the dialog closes.
+  const [heldRef, setHeldRef] = useState<string | undefined>(undefined)
 
   const availability = useAvailability(open)
   const ready = availability.status === 'ready'
@@ -119,27 +131,42 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     setSubmitting(false)
     setConfirmedRef(null)
     setCard(null)
-    setCardFailed(false)
   }
-
-  // Cardcom's iframe ends on our /api/payment/return page, which reports back here. The owner learns of the
-  // card from Cardcom itself (the webhook); this only moves the guest on.
-  useEffect(() => {
-    if (!card) return
-    const onMessage = (event: MessageEvent) => {
-      const data = event.data as { source?: unknown; result?: unknown } | null
-      if (event.origin !== window.location.origin || data?.source !== 'cardcom') return
-      setCardFailed(data.result !== 'ok')
-      setConfirmedRef(card.ref)
-    }
-    window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
-  }, [card])
 
   const goToDates = () => {
     setStep(1)
     availability.reload()
   }
+
+  /** Back to the confirm screen (or the calendar, if the dates were taken) with a fresh bot check. */
+  const handleFailure = (caught: unknown) => {
+    const code = errorFor(caught)
+    setError(code)
+    setCard(null)
+    setTurnstileToken(null)
+    setAttempt((n) => n + 1)
+    // Someone else took the dates while this guest was filling in the form: send them back to choose again.
+    if (code === 'datesTaken') goToDates()
+    else setStep(3)
+  }
+
+  // Cardcom's iframe ends on our /api/payment/return page, which reports back here. The server then reads
+  // the outcome from Cardcom itself and makes the reservation (Cardcom's webhook may beat it to that).
+  useEffect(() => {
+    if (!card) return
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { source?: unknown; result?: unknown } | null
+      if (event.origin !== window.location.origin || data?.source !== 'cardcom') return
+      if (data.result !== 'ok') return handleFailure(new ApiRequestError('card_not_saved'))
+      setSubmitting(true)
+      completeCardBooking(card.id)
+        .then((booking) => setConfirmedRef(booking.ref))
+        .catch(handleFailure)
+        .finally(() => setSubmitting(false))
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [card])
 
   const handleConfirm = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -157,20 +184,17 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         lang,
         website,
         turnstileToken: turnstileToken ?? undefined,
+        heldRef,
       })
-      if (booking.cardUrl) {
-        setCard({ ref: booking.ref, url: booking.cardUrl })
+      if (booking.card) {
+        setHeldRef(booking.ref)
+        setCard(booking.card)
         setStep(4)
       } else {
         setConfirmedRef(booking.ref)
       }
     } catch (caught) {
-      const code = errorFor(caught)
-      setError(code)
-      setTurnstileToken(null)
-      setAttempt((n) => n + 1)
-      // Someone else took the dates while this guest was filling in the form: send them back to choose again.
-      if (code === 'datesTaken') goToDates()
+      handleFailure(caught)
     } finally {
       setSubmitting(false)
     }
@@ -186,8 +210,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
       {confirmedRef ? (
         <div className="py-8 text-center">
           <p className="text-lg">{t.bookingReceived}</p>
-          <p className="mt-4 text-[15px] leading-6 text-neutral-700">{t.awaitingConfirmation}</p>
-          {cardFailed && <p className="mt-4 text-[15px] leading-6 text-red-700">{t.cardNotSaved}</p>}
+          <p className="mt-4 text-[15px] leading-6 text-neutral-700">{t.bookingConfirmedNote}</p>
           <p className="mt-6 text-[15px]">
             {t.bookingRef}: <bdi className="font-medium">{confirmedRef}</bdi>
           </p>
@@ -362,17 +385,23 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                 </form>
               )}
 
-              {/* The reservation is already made here, so there is no way back: only forward, or close. */}
+              {/* The card page is tied to the details already sent, so there is no way back: card, or close. */}
               {step === 4 && card && (
                 <section>
-                  <p className="mb-3 text-[15px] leading-6 text-neutral-700">{t.cardStepNote}</p>
-                  {/* Cardcom's own page: the card number never passes through this site. */}
-                  <iframe
-                    src={card.url}
-                    title={t.cardFrameTitle}
-                    allow="payment"
-                    className="block h-[40rem] w-full border border-neutral-300 bg-white"
-                  />
+                  {submitting ? (
+                    <Loading text={t.confirmingBooking} />
+                  ) : (
+                    <>
+                      <p className="mb-3 text-[15px] leading-6 text-neutral-700">{t.cardStepNote}</p>
+                      {/* Cardcom's own page: the card number never passes through this site. */}
+                      <iframe
+                        src={card.url}
+                        title={t.cardFrameTitle}
+                        allow="payment"
+                        className="block h-[40rem] w-full border border-neutral-300 bg-white"
+                      />
+                    </>
+                  )}
                 </section>
               )}
 
