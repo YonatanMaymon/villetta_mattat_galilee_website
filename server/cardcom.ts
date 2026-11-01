@@ -13,6 +13,8 @@ const TIMEOUT_MS = 10_000
 /** J2: check the card only. J5 would also freeze the amount on the guest's credit line. */
 const J2 = 2
 const ILS = 1
+/** A finished card page: 0, or Cardcom's own codes for a successful J2 (700) or J5 (701) check. */
+const SUCCESS_CODES = [0, 700, 701]
 
 /** Cardcom could not be reached, or refused our request (bad credentials, bad field). */
 export class PaymentUnavailableError extends Error {
@@ -32,8 +34,6 @@ export interface CardPageRequest {
   ref: string
   arrival: IsoDate
   departure: IsoDate
-  /** The stay's price. Shown on Cardcom's page and recorded with the token; with J2 nothing is charged. */
-  amount: number
   lang: Lang
   name: string
   email: string
@@ -91,7 +91,7 @@ export function createCardcomClient(config: CardcomConfig, deps: { fetch?: typeo
   const baseUrl = config.baseUrl ?? BASE_URL
   const auth = { TerminalNumber: config.terminalNumber, ApiName: config.apiName }
 
-  async function call(path: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async function send(path: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
     let response: Response
     try {
       response = await fetchImpl(`${baseUrl}${path}`, {
@@ -105,18 +105,17 @@ export function createCardcomClient(config: CardcomConfig, deps: { fetch?: typeo
     }
     const json = (await response.json().catch(() => null)) as Record<string, unknown> | null
     if (!response.ok || !json) throw new PaymentUnavailableError(`Cardcom answered ${response.status}`)
-    // Cardcom answers 200 even for errors; ResponseCode 0 is the only success.
-    if (json.ResponseCode !== 0) throw new PaymentUnavailableError(`Cardcom ResponseCode ${String(json.ResponseCode)}`)
     return json
   }
 
   return {
     async createCardPage(request) {
       const he = request.lang === 'he'
-      const json = await call('/api/v11/LowProfile/Create', {
+      const json = await send('/api/v11/LowProfile/Create', {
         Operation: 'CreateTokenOnly',
         ReturnValue: encodeTag(request),
-        Amount: request.amount,
+        // Required by Cardcom and shown as the page's total. Nothing is charged here, so the guest must see 0.
+        Amount: 0,
         ISOCoinId: ILS,
         Language: request.lang,
         ProductName: he
@@ -134,6 +133,8 @@ export function createCardcomClient(config: CardcomConfig, deps: { fetch?: typeo
         },
         AdvancedDefinition: { JValidateType: J2 },
       })
+      // Cardcom answers 200 even for errors; ResponseCode 0 is the only success.
+      if (json.ResponseCode !== 0) throw new PaymentUnavailableError(`Cardcom ResponseCode ${String(json.ResponseCode)}`)
       const { LowProfileId: lowProfileId, Url: url } = json
       if (typeof lowProfileId !== 'string' || typeof url !== 'string' || !url.startsWith('https://')) {
         throw new PaymentUnavailableError('Cardcom returned no card page')
@@ -142,19 +143,21 @@ export function createCardcomClient(config: CardcomConfig, deps: { fetch?: typeo
     },
 
     async getResult(lowProfileId) {
-      let json: Record<string, unknown>
-      try {
-        json = await call('/api/v11/LowProfile/GetLpResult', { LowProfileId: lowProfileId })
-      } catch (error) {
-        // A page the guest never finished also comes back with a non-zero code: that is "no card", not an outage.
-        if (error instanceof PaymentUnavailableError && error.message.startsWith('Cardcom ResponseCode')) {
-          return { saved: false }
-        }
-        throw error
-      }
+      const json = await send('/api/v11/LowProfile/GetLpResult', { LowProfileId: lowProfileId })
       const token = json.TokenInfo as { Token?: unknown; CardMonth?: unknown; CardYear?: unknown } | null
       const booking = decodeTag(json.ReturnValue)
-      if (typeof token?.Token !== 'string' || !token.Token || !booking) {
+      // A page the guest never finished comes back with another code: that is "no card", not an outage.
+      const succeeded = SUCCESS_CODES.some((code) => code === json.ResponseCode)
+      if (!succeeded || typeof token?.Token !== 'string' || !token.Token || !booking) {
+        // Without this nobody can tell a declined card from a misread answer. Codes only, no guest details.
+        const pending = json.PendingReason as { ResponseCode?: unknown; Description?: unknown } | null
+        console.warn('card not saved:', {
+          responseCode: json.ResponseCode,
+          hasToken: Boolean(token?.Token),
+          tagReadable: booking !== null,
+          attemptCode: pending?.ResponseCode,
+          attemptReason: pending?.Description,
+        })
         return { saved: false }
       }
       const ui = json.UIValues as Record<string, unknown> | null

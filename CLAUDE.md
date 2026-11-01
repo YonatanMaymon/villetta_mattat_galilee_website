@@ -81,6 +81,10 @@ is configured: `takesCard` in `/api/availability`).
   outcome back with `GetLpResult`. One attempt per id per instance; across instances `findByReference` and
   Smoobu refusing overlapping nights prevent a double booking. Everything booked comes from Cardcom's record:
   `ReturnValue` (`ref arrival departure lang`) and `UIValues` (name, email, phone, prefilled from the dialog).
+- The dialog always asks the server once the iframe ends, even on Cardcom's failure address. `GetLpResult`
+  counts as success on `ResponseCode` 0, 700 or 701 (Cardcom's codes for a successful J2 or J5 check) with a
+  token. Why a card counted as not saved is logged (`card not saved:`, codes only) and kept in the Worker's logs
+  in the Cloudflare dashboard.
 - The reservation's `notice` holds `Ref: <ref>` (how `findByReference` finds it), with `priceStatus: 0`.
 - The price is Smoobu's quote, decided server-side, never taken from the browser. Totals can be fractional:
   format with `formatShekels` (`shared/money.ts`).
@@ -160,7 +164,9 @@ is configured: `takesCard` in `/api/availability`).
   WordPress menu PDF. Cloudflare matches the percent-encoded path, so non-ASCII sources go through
   `encodeURI`. Other old WordPress addresses (`/hello-world/`, `/author/admin/`) answer 404 on purpose.
 - **Card deposit:** Cardcom (see the booking flow). Needs `CARDCOM_TERMINAL_NUMBER` (wrangler `[vars]`) and
-  the `CARDCOM_API_NAME` secret; the webhook only reaches a public address, not localhost.
+  the `CARDCOM_API_NAME` secret; the webhook only reaches a public address, not localhost. **Open (2026-10-31):**
+  Cardcom refuses saved cards with attempt code 60000303: the acquirer has not allowed card-not-present
+  transactions on terminal 199960. The owner must ask the credit card company to open this; no code fixes it.
 - **Not done yet:** recording the card in the Smoobu reservation (today only the owner's email says so).
 
 ## Working notes

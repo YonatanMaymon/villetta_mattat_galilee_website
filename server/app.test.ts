@@ -18,7 +18,13 @@ const GUEST = {
 
 /** A booking API backed by an in-memory Smoobu, with the sent mail captured rather than delivered. */
 function harness(
-  options: { blocked?: string[]; env?: Env; cards?: CardVault; pms?: FakePms; now?: () => number } = {},
+  options: {
+    blocked?: string[]
+    env?: Env
+    cards?: CardVault
+    pms?: FakePms
+    now?: () => number
+  } = {},
 ) {
   const pms = options.pms ?? createFakePms({ blocked: options.blocked, nightlyPrice: () => 2200 })
   const sent: OutgoingMail[] = []
@@ -282,7 +288,7 @@ describe('card step (Cardcom)', () => {
     expect((await (await without.request('/api/availability')).json()).takesCard).toBe(false)
   })
 
-  it('opens a card page for the Smoobu price, and books and emails nothing yet', async () => {
+  it('opens a card page, and books and emails nothing yet', async () => {
     const { cards, pages } = fakeCards()
     const { pms, sent, book } = harness({ cards })
     const response = await book()
@@ -291,7 +297,7 @@ describe('card step (Cardcom)', () => {
     expect(response.status).toBe(200)
     expect(body.card).toEqual({ id: 'lp-1', url: 'https://secure.cardcom.solutions/lp/1' })
     expect(pms.reservations).toHaveLength(0)
-    expect(pages[0]).toMatchObject({ ref: body.ref, amount: 6600, arrival: ARRIVAL, name: GUEST.name, lang: 'he' })
+    expect(pages[0]).toMatchObject({ ref: body.ref, arrival: ARRIVAL, name: GUEST.name, lang: 'he' })
     expect(pages[0].successUrl).toMatch(/\/api\/payment\/return\?result=ok$/)
     // Everyone hears once it is settled: booked, or the hold runs out without a card.
     expect(sent).toHaveLength(0)

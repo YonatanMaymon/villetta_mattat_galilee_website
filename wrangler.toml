@@ -20,6 +20,11 @@ html_handling = "drop-trailing-slash"
 # Only the API runs Worker code; pages and images come straight from the static assets.
 run_worker_first = ["/api/*", "/hapisga.ics"]
 
+# Keeps the Worker's logs for a few days (dashboard > Workers > villetta > Logs), so a guest's failed booking
+# can still be looked into afterwards; `wrangler tail` only shows what happens while it runs.
+[observability]
+enabled = true
+
 # Non-secret settings. These two identify the apartment; they are not credentials.
 # The last good copy of the hapisga calendar served at /hapisga.ics (worker/hapisga.ts).
 [[kv_namespaces]]

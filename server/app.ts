@@ -79,7 +79,7 @@ function siteOrigin(c: Context): string {
 
 /**
  * The page Cardcom's iframe lands on after the card form. It only tells the booking dialog (same origin)
- * how it went; what counts is Cardcom's own record, read by the webhook.
+ * that the form is over; what counts is Cardcom's own record, which the server reads.
  */
 function cardReturnPage(result: 'ok' | 'failed'): string {
   return `<!doctype html><meta charset="utf-8"><title>Villetta</title><script>parent.postMessage({ source: 'cardcom', result: '${result}' }, location.origin)</script>`
@@ -406,7 +406,6 @@ export function createApp(env: Env, deps: AppDeps = {}) {
         page = await cards.createCardPage({
           ...request,
           ref,
-          amount,
           successUrl: `${site}/api/payment/return?result=ok`,
           failedUrl: `${site}/api/payment/return?result=failed`,
           webhookUrl: `${new URL(c.req.url).origin}/api/payment/webhook`,
@@ -474,7 +473,11 @@ export function createApp(env: Env, deps: AppDeps = {}) {
     }
   })
 
-  app.get('/payment/return', (c) => c.html(cardReturnPage(c.req.query('result') === 'ok' ? 'ok' : 'failed')))
+  app.get('/payment/return', (c) => {
+    const result = c.req.query('result') === 'ok' ? 'ok' : 'failed'
+    console.log('card page ended:', result)
+    return c.html(cardReturnPage(result))
+  })
 
   /**
    * Cardcom reports a finished card page here, which books the stay even if the guest closed the dialog. The
