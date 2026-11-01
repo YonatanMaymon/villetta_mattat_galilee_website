@@ -150,14 +150,14 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     else setStep(3)
   }
 
-  // Cardcom's iframe ends on our /api/payment/return page, which reports back here. The server then reads
-  // the outcome from Cardcom itself and makes the reservation (Cardcom's webhook may beat it to that).
+  // Cardcom's iframe ends on our /api/payment/return page, which reports back here. Whichever way it ended,
+  // only the server can tell: it reads the outcome from Cardcom itself and makes the reservation (Cardcom's
+  // webhook may beat it to that).
   useEffect(() => {
     if (!card) return
     const onMessage = (event: MessageEvent) => {
-      const data = event.data as { source?: unknown; result?: unknown } | null
+      const data = event.data as { source?: unknown } | null
       if (event.origin !== window.location.origin || data?.source !== 'cardcom') return
-      if (data.result !== 'ok') return handleFailure(new ApiRequestError('card_not_saved'))
       setSubmitting(true)
       completeCardBooking(card.id)
         .then((booking) => setConfirmedRef(booking.ref))

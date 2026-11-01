@@ -10,7 +10,6 @@ const PAGE = {
   ref: 'A1B2C3D4E5F6',
   arrival: '2026-11-10',
   departure: '2026-11-13',
-  amount: 12600,
   lang: 'he' as const,
   name: 'Dana Ben David',
   email: 'dana@example.com',
@@ -38,7 +37,7 @@ describe('createCardPage', () => {
       ApiName: 'test-api',
       Operation: 'CreateTokenOnly',
       ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13 he',
-      Amount: 12600,
+      Amount: 0,
       ISOCoinId: 1,
       Language: 'he',
       WebHookUrl: PAGE.webhookUrl,
@@ -80,11 +79,39 @@ describe('getResult', () => {
     expect(sentBody(fetchImpl).body).toMatchObject({ LowProfileId: 'lp-1', TerminalNumber: 1000 })
   })
 
+  it('counts a successful J2 check (code 700) as a saved card', async () => {
+    const fetchImpl = respond({
+      ResponseCode: 700,
+      ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13 en',
+      TokenInfo: { Token: 'tok-123', CardMonth: 4, CardYear: 2029 },
+    })
+    expect(await client(fetchImpl).getResult('lp-1')).toMatchObject({ saved: true, expiry: '04/2029' })
+  })
+
   it('reports no card when the page was never completed', async () => {
     expect(await client(respond({ ResponseCode: 0, ReturnValue: 'X 2026-11-10 2026-11-13' })).getResult('lp')).toEqual({
       saved: false,
     })
     expect(await client(respond({ ResponseCode: 700 })).getResult('lp')).toEqual({ saved: false })
+  })
+
+  it('logs why there is no card, without the guest details', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fetchImpl = respond({
+      ResponseCode: 5117,
+      ReturnValue: 'A1B2C3D4E5F6 2026-11-10 2026-11-13 en',
+      PendingReason: { ResponseCode: 60000001, Description: 'declined' },
+      UIValues: { CardOwnerName: 'Dana Ben David' },
+    })
+    expect(await client(fetchImpl).getResult('lp')).toEqual({ saved: false })
+    expect(warn).toHaveBeenCalledWith('card not saved:', {
+      responseCode: 5117,
+      hasToken: false,
+      tagReadable: true,
+      attemptCode: 60000001,
+      attemptReason: 'declined',
+    })
+    warn.mockRestore()
   })
 
   it('reports Cardcom being down as retryable rather than as "no card"', async () => {
