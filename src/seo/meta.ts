@@ -50,6 +50,8 @@ function pageCopy(path: string, lang: Lang): PageCopy | null {
       return page(legal.ACCESSIBILITY.hero.image)
     case '/privacy':
       return page(legal.PRIVACY_POLICY.hero.image)
+    case '/terms':
+      return page(legal.TERMS.hero.image)
     default:
       return null
   }

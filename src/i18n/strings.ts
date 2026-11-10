@@ -83,6 +83,8 @@ const he = {
   bookingReceived: 'ההזמנה שלכם אושרה!',
   bookingConfirmedNote: 'התאריכים שמורים עבורכם, ושלחנו לכם את הפרטים במייל. לא בוצע חיוב.',
   bookingRef: 'מספר הזמנה',
+  acceptTerms: 'קראתי ואני מאשר/ת את',
+  termsLink: 'תקנון האתר',
   continueToCard: 'המשך לפרטי כרטיס',
   cardDepositNote:
     'בשלב הבא תזינו כרטיס אשראי כפיקדון. הכרטיס לא יחויב עכשיו, אלא רק אם ייגרם נזק לווילה, או בביטול מאוחר לפי מדיניות הביטול.',
@@ -176,6 +178,8 @@ const en: Strings = {
   bookingReceived: 'Your reservation is confirmed!',
   bookingConfirmedNote: 'Your dates are booked, and we have emailed you the details. Nothing has been charged.',
   bookingRef: 'Reference',
+  acceptTerms: 'I have read and accept the',
+  termsLink: 'terms and conditions',
   continueToCard: 'Continue to card details',
   cardDepositNote:
     'Next you will enter a credit card as a deposit. It is not charged now, only if the villa is damaged, or for a late cancellation under the policy above.',

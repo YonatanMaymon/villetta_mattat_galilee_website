@@ -22,6 +22,8 @@ export const bookingSchema = z.object({
   departure: isoDate,
   lang: z.enum(LANGS),
   website: honeypot,
+  /** The guest ticked "I accept the terms" (/terms). The card acquirer requires it before every booking. */
+  acceptedTerms: z.literal(true),
   /** Cloudflare Turnstile token. Absent when Turnstile is not configured (local development). */
   turnstileToken: z.string().max(4096).optional(),
   /**

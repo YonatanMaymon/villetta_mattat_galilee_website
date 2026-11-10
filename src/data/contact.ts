@@ -14,8 +14,10 @@ export const CONTACT_DETAILS = {
     value: 'villetta@mattat-galilee.co.il',
     href: 'mailto:villetta@mattat-galilee.co.il',
   },
-  // The original's link is malformed ("mailto:https://www.waze..."); this points straight at Waze.
-  address: { label: 'כתובתנו', value: '"וילטה מתת גליל" בוויז', href: SOCIALS.waze },
+  // The card acquirer asks for the business's name and address on the contact page (as registered for VAT).
+  business: { label: 'בית העסק', value: 'שרון מימון, עוסק מורשה ("וילה מתת גליל")' },
+  // The village has no street addresses, so Waze is how guests find the way.
+  address: { label: 'כתובתנו', value: 'מתת, הגליל המערבי', href: SOCIALS.waze, linkText: 'ניווט בוויז' },
 }
 
 export const CONTACT_FORM = {

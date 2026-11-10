@@ -25,6 +25,7 @@ export const NAV_LINKS: NavLink[] = [
 export const FOOTER_LINKS: NavLink[] = [
   { label: 'הצהרת נגישות', href: '/accessibility' },
   { label: 'מדיניות פרטיות', href: '/privacy' },
+  { label: 'תקנון', href: '/terms' },
 ]
 
 export const HERO = {
@@ -105,7 +106,10 @@ export const SOCIALS = {
 
 export const BOOKING = {
   title: 'הזמנת מקום',
-  /** The cancellation policy, shown on the last screen of the booking dialog above the confirm button. */
+  /**
+   * The cancellation policy, shown on the last screen of the booking dialog above the confirm button. The
+   * full terms (TERMS in ./legal) repeat the tiers: keep both in step.
+   */
   terms:
     'ההזמנה מאושרת ברגע שכרטיס האשראי נבדק ונשמר כפיקדון, ואישור יישלח אליכם במייל. ' +
     'התשלום על השהייה מתבצע בהגעה. ' +

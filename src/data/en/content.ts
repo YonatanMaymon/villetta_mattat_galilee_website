@@ -18,6 +18,7 @@ export const NAV_LINKS: NavLink[] = [
 export const FOOTER_LINKS: NavLink[] = [
   { label: 'Accessibility Statement', href: '/accessibility' },
   { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms and Conditions', href: '/terms' },
 ]
 
 export const HERO = {

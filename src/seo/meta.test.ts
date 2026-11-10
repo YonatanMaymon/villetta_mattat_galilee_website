@@ -32,7 +32,7 @@ describe.each(LANGS)('page titles and descriptions (%s)', (lang) => {
 
 describe('pages', () => {
   it('include the footer-only pages, so they are prerendered and in the sitemap', () => {
-    expect(PAGE_PATHS).toEqual(expect.arrayContaining(['/accessibility', '/privacy']))
+    expect(PAGE_PATHS).toEqual(expect.arrayContaining(['/accessibility', '/privacy', '/terms']))
     expect(new Set(PAGE_PATHS).size).toBe(PAGE_PATHS.length)
   })
 })
