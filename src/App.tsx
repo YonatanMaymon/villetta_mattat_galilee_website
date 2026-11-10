@@ -26,6 +26,7 @@ const pageRoutes = (
     <Route path="contact" element={<ContactPage />} />
     <Route path="accessibility" element={<LegalPage page="accessibility" />} />
     <Route path="privacy" element={<LegalPage page="privacy" />} />
+    <Route path="terms" element={<LegalPage page="terms" />} />
   </>
 )
 

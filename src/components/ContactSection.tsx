@@ -35,7 +35,7 @@ export default function ContactSection() {
   const [sent, setSent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<'rateLimited' | 'sendFailed' | null>(null)
-  const { phone, whatsapp, email, address } = CONTACT_DETAILS
+  const { business, phone, whatsapp, email, address } = CONTACT_DETAILS
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -79,11 +79,15 @@ export default function ContactSection() {
           <a href={email.href}>{email.value}</a>
         </Detail>
         <Detail icon={<MapPin size={26} strokeWidth={1.25} />} label={address.label}>
-          <a href={address.href} target="_blank" rel="noopener noreferrer">
-            {address.value}
+          <p>{address.value}</p>
+          <a href={address.href} target="_blank" rel="noopener noreferrer" className="underline">
+            {address.linkText}
           </a>
         </Detail>
       </div>
+      <p className="mx-auto mt-10 max-w-[1100px] text-center text-[15px] text-neutral-700">
+        {business.label}: {business.value}
+      </p>
 
       <div className="mt-24">
         <SectionHeading title={CONTACT_FORM.title}>

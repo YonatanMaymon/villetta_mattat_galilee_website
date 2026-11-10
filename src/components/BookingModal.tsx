@@ -94,6 +94,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [selection, setSelection] = useState<Selection>(EMPTY_SELECTION)
   const [guest, setGuest] = useState<Guest>(EMPTY_GUEST)
   const [website, setWebsite] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   // A token is spent the moment the server checks it, so every failed attempt needs a new widget.
   const [attempt, setAttempt] = useState(0)
@@ -126,6 +127,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     setSelection(EMPTY_SELECTION)
     setGuest(EMPTY_GUEST)
     setWebsite('')
+    setAcceptedTerms(false)
     setTurnstileToken(null)
     setError(null)
     setSubmitting(false)
@@ -170,7 +172,8 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
 
   const handleConfirm = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!stay || submitting) return
+    // The checkbox is `required`, so the browser stops the form first; this keeps the type honest.
+    if (!stay || !acceptedTerms || submitting) return
 
     setSubmitting(true)
     setError(null)
@@ -183,6 +186,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         departure: stay.departure,
         lang,
         website,
+        acceptedTerms,
         turnstileToken: turnstileToken ?? undefined,
         heldRef,
       })
@@ -371,6 +375,23 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                   <p className="border-s-2 border-brown ps-3 text-[13px] leading-5 text-neutral-800">
                     {takesCard ? t.cardDepositNote : t.securityDepositNote}
                   </p>
+
+                  <label className="flex cursor-pointer items-start gap-3 text-[14px] leading-5">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-brown"
+                    />
+                    <span>
+                      {t.acceptTerms}{' '}
+                      {/* A new tab, so reading it doesn't lose the booking in progress. */}
+                      <a href={localize('/terms')} target="_blank" rel="noopener" className="cursor-pointer underline">
+                        {t.termsLink}
+                      </a>
+                    </span>
+                  </label>
 
                   {/* Renders nothing when Turnstile is not configured; the API skips the check to match. */}
                   <Turnstile key={attempt} action={TURNSTILE_ACTION} onToken={setTurnstileToken} />

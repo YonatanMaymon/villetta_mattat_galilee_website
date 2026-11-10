@@ -1,4 +1,9 @@
-import { ACCESSIBILITY as HE_ACCESSIBILITY, PRIVACY_POLICY as HE_PRIVACY, type LegalPage } from '../legal'
+import {
+  ACCESSIBILITY as HE_ACCESSIBILITY,
+  PRIVACY_POLICY as HE_PRIVACY,
+  TERMS as HE_TERMS,
+  type LegalPage,
+} from '../legal'
 
 export const ACCESSIBILITY: LegalPage = {
   hero: {
@@ -85,13 +90,14 @@ export const PRIVACY_POLICY: LegalPage = {
     title: 'Privacy Policy',
     subtitle: 'What happens to the details you leave with us',
   },
-  updated: '29 October 2026',
+  updated: '10 November 2026',
   sections: [
     {
       title: 'In short',
       paragraphs: [
-        'We collect only what we need to handle your booking or message, use it only for that, and ' +
-          'never sell it. You are not legally required to give us any details, but without your name ' +
+        'We collect only what we need to handle your booking or message, and use it only for that. Your ' +
+          'details are not passed on to any third party, except the service providers that run the site for ' +
+          'us (see "Who receives it"), or where the law requires it. We never sell them. You are not legally required to give us any details, but without your name ' +
           'and a way to reach you we cannot handle a booking or get back to you.',
       ],
     },
@@ -156,6 +162,88 @@ export const PRIVACY_POLICY: LegalPage = {
           'ask us to correct or delete it. For such a request, or any question about this policy, ' +
           'contact us:',
       ],
+      contact: true,
+    },
+  ],
+}
+
+export const TERMS: LegalPage = {
+  hero: {
+    image: HE_TERMS.hero.image,
+    title: 'Terms and Conditions',
+    subtitle: 'The terms of booking and staying at the Villetta',
+  },
+  updated: '10 November 2026',
+  sections: [
+    {
+      title: 'General',
+      paragraphs: [
+        'This website and its bookings are run by Sharon Mimon, a registered business (osek murshe) trading ' +
+          'as "Villa Mattat Galil" ("the Villetta"), Mattat, Western Galilee.',
+        'These terms are an integral part of every booking made on the site. Before confirming a booking ' +
+          'you will be asked to confirm that you have read and accept them.',
+      ],
+    },
+    {
+      title: 'The service and booking',
+      paragraphs: [
+        'The Villetta offers a stay in a private villa, as described on this site. In the booking form you ' +
+          'pick free dates on the calendar and leave your name, phone and email. The total price of the ' +
+          'stay, according to the price list on the site, is shown before you confirm.',
+        'Payment for the stay is made on arrival. To secure the booking we ask for credit card details as ' +
+          "a deposit, in the secure form of the card processor Cardcom or by phone. The card is not charged " +
+          'when you book, and is charged only if the Villetta is damaged, or for a late cancellation under ' +
+          'the cancellation policy below.',
+      ],
+    },
+    {
+      title: 'Service delivery policy',
+      paragraphs: [
+        'The booking confirmation, with your reference number and the details of the stay, is emailed to ' +
+          'you as soon as the booking is received, within minutes.',
+        'The service is given on the dates booked: from the day of arrival until the day of departure, which ' +
+          'is the day after the last night. Arrival and departure times are arranged with you before you ' +
+          'arrive.',
+        'If the dates were taken while you were booking, for example through another booking site, the ' +
+          'booking is not made, nothing is charged, and we let you know by email.',
+      ],
+    },
+    {
+      title: 'Who can stay: age limit',
+      paragraphs: [
+        'The Villetta is for couples only: two guests, aged 18 or over. We do not host children or babies, ' +
+          'and pets are not allowed.',
+      ],
+    },
+    {
+      title: 'Cancellation policy',
+      paragraphs: [
+        'Cancellations are governed by the Israeli Consumer Protection Law, 5741-1981, and the Consumer ' +
+          'Protection (Cancellation of Transaction) Regulations, 5771-2010, and nothing here limits your ' +
+          'rights under them. You can cancel by phone, WhatsApp or email (details at the end of these terms).',
+        'Cancellation charges:',
+      ],
+      items: [
+        'Cancel up to 8 days before arrival: no charge.',
+        'Cancel 4 to 7 days before arrival: 50% of the price of the stay.',
+        'Cancel 3 days or less before arrival, or no-show: the full price.',
+        'If other guests rebook the dates, the charge is cancelled or refunded in full.',
+        'If Home Front Command instructions or the security situation prevent the stay, cancellation is free.',
+      ],
+    },
+    {
+      title: 'Privacy',
+      paragraphs: [
+        'Your personal details are not passed on to any third party, except the service providers that run ' +
+          'bookings for us (the booking system, the email service, the card processor and the site host), ' +
+          'each only as far as it needs to handle the booking, or where the law requires it. We never sell ' +
+          'your details, and we will not send you marketing email without your consent.',
+      ],
+      link: { label: 'Read the full privacy policy', href: '/privacy' },
+    },
+    {
+      title: 'Contact',
+      paragraphs: ['For questions, or to change or cancel a booking:'],
       contact: true,
     },
   ],

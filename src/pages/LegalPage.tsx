@@ -1,22 +1,25 @@
+import { Link } from 'react-router-dom'
 import PageHero from '../components/PageHero'
 import PauseButtonsSetting from '../components/PauseButtonsSetting'
 import { useLanguage } from '../i18n/LanguageContext'
 
 interface LegalPageProps {
-  page: 'accessibility' | 'privacy'
+  page: 'accessibility' | 'privacy' | 'terms'
 }
 
-/** The accessibility statement and the privacy policy: plain text pages, linked from the footer. */
+/** The accessibility statement, the privacy policy and the terms: plain text pages, linked from the footer. */
 export default function LegalPage({ page }: LegalPageProps) {
   const {
     t,
+    localize,
     data: {
-      legal: { ACCESSIBILITY, PRIVACY_POLICY },
+      legal: { ACCESSIBILITY, PRIVACY_POLICY, TERMS },
       contact: { CONTACT_DETAILS },
     },
   } = useLanguage()
-  const { hero, updated, sections } = page === 'accessibility' ? ACCESSIBILITY : PRIVACY_POLICY
-  const { phone, email } = CONTACT_DETAILS
+  const pages = { accessibility: ACCESSIBILITY, privacy: PRIVACY_POLICY, terms: TERMS }
+  const { hero, updated, sections } = pages[page]
+  const { business, address, phone, email } = CONTACT_DETAILS
 
   return (
     <>
@@ -42,10 +45,20 @@ export default function LegalPage({ page }: LegalPageProps) {
                   ))}
                 </ul>
               )}
+              {section.link && (
+                <p className="mt-3">
+                  <Link to={localize(section.link.href)} className="cursor-pointer underline">
+                    {section.link.label}
+                  </Link>
+                </p>
+              )}
               {section.setting === 'pauseButtons' && <PauseButtonsSetting />}
               {section.contact && (
                 <ul className="mt-3 space-y-1">
-                  <li className="font-medium">{phone.note}</li>
+                  <li className="font-medium">{business.value}</li>
+                  <li>
+                    {address.label}: {address.value}
+                  </li>
                   <li>
                     {phone.label}:{' '}
                     <a href={phone.href} className="cursor-pointer underline">

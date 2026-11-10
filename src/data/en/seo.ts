@@ -79,4 +79,10 @@ export const PAGE_SEO = {
       'What the booking and contact forms collect, why, who receives it, and how to see, correct or ' +
       'delete your details.',
   },
+  '/terms': {
+    title: 'Terms and Conditions | Villetta Mattat Galilee',
+    description:
+      'The terms of booking and staying at Villetta Mattat Galilee: service delivery, age limit, ' +
+      'cancellation under the Consumer Protection Law, and privacy.',
+  },
 } satisfies Record<string, PageSeo>

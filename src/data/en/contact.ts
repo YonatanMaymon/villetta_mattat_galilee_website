@@ -10,7 +10,13 @@ export const CONTACT_DETAILS = {
   phone: { ...HE_DETAILS.phone, label: 'Phone', note: 'Sharon Mimon' },
   whatsapp: { ...HE_DETAILS.whatsapp, label: 'WhatsApp', value: 'Send us a message' },
   email: { ...HE_DETAILS.email, label: 'Email' },
-  address: { ...HE_DETAILS.address, label: 'Our Address', value: '"Villetta Mattat Galilee" on Waze' },
+  business: { label: 'The business', value: 'Sharon Mimon, registered business ("Villa Mattat Galil")' },
+  address: {
+    ...HE_DETAILS.address,
+    label: 'Our Address',
+    value: 'Mattat, Western Galilee',
+    linkText: 'Directions on Waze',
+  },
 }
 
 export const CONTACT_FORM = {

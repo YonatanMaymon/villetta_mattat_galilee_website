@@ -16,6 +16,9 @@ const GUEST = {
   lang: 'he' as const,
 }
 
+/** What the dialog sends for that guest's stay, terms accepted. */
+const BOOKING = { ...GUEST, acceptedTerms: true, arrival: ARRIVAL, departure: DEPARTURE }
+
 /** A booking API backed by an in-memory Smoobu, with the sent mail captured rather than delivered. */
 function harness(
   options: {
@@ -46,7 +49,7 @@ function harness(
     })
 
   const book = (overrides: Record<string, unknown> = {}, ip?: string) =>
-    post('/api/booking', { ...GUEST, arrival: ARRIVAL, departure: DEPARTURE, ...overrides }, ip)
+    post('/api/booking', { ...BOOKING, ...overrides }, ip)
 
   return { app, pms, sent, post, book, followUpExpiredHolds }
 }
@@ -150,6 +153,13 @@ describe('POST /api/booking', () => {
     expect((await book({ name: '' })).status).toBe(400)
   })
 
+  it('books nothing unless the guest accepted the terms', async () => {
+    const { pms, book } = harness()
+    expect((await book({ acceptedTerms: false })).status).toBe(400)
+    expect((await book({ acceptedTerms: undefined })).status).toBe(400)
+    expect(pms.reservations).toHaveLength(0)
+  })
+
   it('allows only three bookings per caller, without affecting another caller', async () => {
     const { book } = harness()
     // Every attempt counts, successful or not: three are let through, the fourth is refused.
@@ -164,7 +174,7 @@ describe('POST /api/booking', () => {
     const response = await app.request('/api/booking', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...GUEST, arrival: ARRIVAL, departure: DEPARTURE, turnstileToken: 'bad' }),
+      body: JSON.stringify({ ...BOOKING, turnstileToken: 'bad' }),
     })
     expect(response.status).toBe(403)
     expect(await response.json()).toEqual({ error: 'bot_check_failed' })
@@ -185,7 +195,7 @@ describe('POST /api/booking', () => {
     const response = await app.request('/api/booking', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...GUEST, arrival: ARRIVAL, departure: DEPARTURE, turnstileToken: 'the-token' }),
+      body: JSON.stringify({ ...BOOKING, turnstileToken: 'the-token' }),
     })
     expect(response.status).toBe(200)
     expect(seen).toEqual(['the-token'])
@@ -209,7 +219,7 @@ describe('POST /api/booking', () => {
     const response = await app.request('/api/booking', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...GUEST, arrival: ARRIVAL, departure: DEPARTURE }),
+      body: JSON.stringify({ ...BOOKING }),
     })
     expect(response.status).toBe(200)
     expect(pms.reservations).toHaveLength(1)

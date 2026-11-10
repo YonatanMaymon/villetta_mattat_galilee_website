@@ -88,6 +88,8 @@ is configured: `takesCard` in `/api/availability`).
 - The reservation's `notice` holds `Ref: <ref>` (how `findByReference` finds it), with `priceStatus: 0`.
 - The price is Smoobu's quote, decided server-side, never taken from the browser. Totals can be fractional:
   format with `formatShekels` (`shared/money.ts`).
+- The confirm step has a required "I accept the terms" checkbox linking to `/terms`, and the server refuses a
+  booking without `acceptedTerms: true` (`bookingSchema`). Cardcom's acquirer requires both; keep them.
 - Abuse protection: honeypot field `website`, 3 bookings/hour per IP (in memory, per instance), Cloudflare
   Turnstile (skipped when `TURNSTILE_SECRET` is unset). A booking blocks real dates, so keep these.
 
@@ -145,6 +147,12 @@ is configured: `takesCard` in `/api/availability`).
   September 2026). Set up a Google Business Profile, where the map results for "צימר במתת" come from, and
   ask guests for Google reviews there. Have a lawyer check the accessibility statement and the privacy
   policy.
+- **Terms (תקנון):** `/terms` (`TERMS` in `src/data/legal.ts`), linked from the footer and the booking dialog.
+  Cardcom's acquirer approves the site only with: the business name, address and phone on `/contact`, and in
+  the terms a service delivery policy (with days), the age limit (couples only, 18+, no children or pets),
+  cancellation under the Consumer Protection Law 1981, and a promise not to pass details to third parties.
+  The cancellation tiers are written twice, in `TERMS` and `BOOKING.terms`: change both. The business details
+  come from Sharon's VAT certificate (`business` in `CONTACT_DETAILS`).
 - **Accessibility and privacy:** the statement is at `/accessibility`, the policy at `/privacy` (copy in
   `src/data/legal.ts`), both linked from the footer. The floating accessibility button links to the
   statement. The booking and contact forms each carry a line linking to the policy. The policy names the
